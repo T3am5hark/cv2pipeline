@@ -5,11 +5,11 @@ import cv2
 class FrameBuffer:
 
     def __init__(self, n_frames=5):
-        self._n_frames = n_frames
+
         self._frame_index = n_frames-1
         self.buffer = list()
 
-        for i in range(0, self.n_frames):
+        for i in range(0, n_frames):
             self.buffer.append(None)
 
         self._frame_count = 0
@@ -22,9 +22,13 @@ class FrameBuffer:
     def frame_index(self):
         return self._frame_index
 
+    @property
+    def buffer_len(self):
+        return len(self.buffer)
+
     def new_frame(self, frame):
         # Place a new frame in the buffer
-        idx = (self._frame_index + 1) % self._n_frames
+        idx = (self._frame_index + 1) % self.buffer_len
         timestamp = datetime.now()
 
         self.buffer[idx] = (timestamp, frame)

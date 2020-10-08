@@ -3,10 +3,10 @@ import time
 from datetime import datetime, timedelta
 from threading import Thread
 
-from src.util.log_utils import get_default_logger, init_logging
 from src.frame_buffer import FrameBuffer
+from src.util.log_utils import get_default_logger, init_logging
 
-logger = get_default_logger
+logger = get_default_logger()
 
 class FrameProcessor:
 
@@ -17,6 +17,7 @@ class FrameProcessor:
         self.hflip = hflip
         if buffer is None:
             buffer = FrameBuffer()
+        self.buffer = buffer
         self._stopped = True
         self._usb_device = usb_device
         self._video_capture = None
@@ -50,10 +51,11 @@ class FrameProcessor:
 
         # Test frame
         ret, frame = self._video_capture.read()
+        logger.info('Frame resolution = {}'.format(frame.shape))
+
         self._thread = Thread(target=self._run_capture, args=())
         self._thread.start()
         self._stopped = False
-        logger.info('Frame capture thread is running')
 
     def stop(self):
         self._stopped = True
@@ -67,22 +69,24 @@ class FrameProcessor:
         success, frame = self._video_capture.read()
 
     def _run_capture(self):
+        logger.info('Frame capture thread is running')
+
         while True:
-            if self.stopped:
+            if self._stopped:
                 return
-        success, frame = self._video_capture.read()
-        if (success):
-            if self.vflip and self.hflip:
-                frame = cv2.flip(frame, -1)
-            elif self.vflip:
-                frame = cv2.flip(frame, 0)
-            elif self.hflip:
-                frame = cv2.flip(frame, 1)
+            success, frame = self._video_capture.read()
+            if success:
+                if self.vflip and self.hflip:
+                    frame = cv2.flip(frame, -1)
+                elif self.vflip:
+                    frame = cv2.flip(frame, 0)
+                elif self.hflip:
+                    frame = cv2.flip(frame, 1)
 
-            buffer.new_frame(frame)
-            self._frame_count += 1
+                self.buffer.new_frame(frame)
+                self._frame_count += 1
 
-        time.sleep(self._sleep_time_s)
+            time.sleep(self._sleep_time_s)
 
 
 class PicamFrameProcessor(FrameProcessor):
@@ -96,18 +100,26 @@ class PicamFrameProcessor(FrameProcessor):
 
 def test():
     logger = init_logging()
+    logger.info('Testing video capture')
 
     processor = FrameProcessor()
 
     processor.run()
     prevtime=datetime.now()
 
+    fps_frames = 50
+    last_framecount = 0
+
     while True:
-        if processor.frame_count % 1000 == 0:
+        if processor.frame_count - last_framecount >= fps_frames:
             current_time=datetime.now()
-            delta_s = (current_time-prevtime).seconds
-            fps = 1000.0 / delta_s
-            logger.info('{:.02f} FPS'.format(fps))
+            delta_s = (current_time-prevtime).total_seconds()
+            fps = float(processor.frame_count-last_framecount) / delta_s
+            logger.info('{:07d} {:.02f} FPS'.format(processor.frame_count, fps))
+            prevtime=current_time
+            last_framecount = processor.frame_count
+
+        time.sleep(0.01)
 
 
 if __name__ == '__main__':
