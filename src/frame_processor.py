@@ -1,6 +1,6 @@
 import cv2
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from threading import Thread
 
 from src.frame_buffer import FrameBuffer
@@ -99,7 +99,7 @@ class PicamFrameProcessor(FrameProcessor):
 
 
 def test():
-    logger = init_logging()
+    init_logging()
     logger.info('Testing video capture')
 
     processor = FrameProcessor()
