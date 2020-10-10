@@ -1,9 +1,11 @@
 import cv2
 import time
+import sys, argparse
 from datetime import datetime
 from threading import Thread
 
 from src.frame_buffer import FrameBuffer
+from src.framewatcher import FrameWatcher
 from src.util.log_utils import get_default_logger, init_logging
 
 logger = get_default_logger()
@@ -98,11 +100,15 @@ class PicamFrameProcessor(FrameProcessor):
         pass
 
 
-def test():
+def test(display_video=False):
     init_logging()
     logger.info('Testing video capture')
 
     processor = FrameProcessor()
+
+    watcher = FrameWatcher(buffer=processor.buffer,
+                           display_video=display_video)
+    watcher.run()
 
     processor.run()
     prevtime=datetime.now()
@@ -123,4 +129,11 @@ def test():
 
 
 if __name__ == '__main__':
-    test()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--display_video', type=bool, default=False,
+                        help='(True/False) display video in LXDE window')
+    args = parser.parse_args()
+    display_video = vars(args)['display_video']
+
+    test(display_video=display_video)
