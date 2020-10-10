@@ -138,4 +138,4 @@ if __name__ == '__main__':
 
     logger.info('display_video={}'.format(display_video))
 
-    test(display_video=display_video)
+    test(display=display_video)
