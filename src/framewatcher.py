@@ -60,7 +60,13 @@ class FrameWatcher:
             while self._running:
                 while self._frame_index != self._buffer.frame_index:
                     self._frame_index = (self._frame_index + 1) % self._buffer.buffer_len
-                    timestamp, frame = self._buffer.buffer[self._frame_index]
+
+                    frame_tuple = self._buffer.buffer[self._frame_index]
+
+                    if frame_tuple is None:
+                        continue
+
+                    timestamp, frame = frame_tuple
                     processed_frame = self._process_frame(timestamp, frame)
                     self._prev_timestamp = timestamp
                     if self.display_video:
