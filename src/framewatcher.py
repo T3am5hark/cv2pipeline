@@ -47,9 +47,10 @@ class FrameWatcher:
 
         self._thread = Thread(target=self._watch, args=())
         self._thread.start()
-        logger.info('{} running'.format(self.name))
 
     def _watch(self):
+
+        logger.info('{} running'.format(self.name))
 
         self._prev_timestamp = datetime.now()
 
@@ -62,6 +63,9 @@ class FrameWatcher:
                     processed_frame = self._process_frame(timestamp, frame)
                     if self.display_video:
                         self._display_video(processed_frame)
+
+                    if self._buffer.frame_count % 100 == 0:
+                        logger.info('{} heartbeat {}'.format(self.name, self._buffer.frame_count))
                 # If frame buffer exhausted, wait 10ms before checking again
                 time.sleep(0.010)
 
