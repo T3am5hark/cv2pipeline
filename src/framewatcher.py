@@ -53,15 +53,20 @@ class FrameWatcher:
 
         self._prev_timestamp = datetime.now()
 
-        while self._running:
-            while self._frame_index != self._buffer.frame_index:
-                self._frame_index = (self._frame_index + 1) % self._buffer.buffer_len
-                timestamp, frame = self._buffer.buffer[self._frame_index]
-                processed_frame = self._process_frame(timestamp, frame)
-                if self.display_video:
-                    self.display_video(processed_frame)
-            # If frame buffer exhausted, wait 10ms before checking again
-            time.sleep(0.010)
+        try:
+
+            while self._running:
+                while self._frame_index != self._buffer.frame_index:
+                    self._frame_index = (self._frame_index + 1) % self._buffer.buffer_len
+                    timestamp, frame = self._buffer.buffer[self._frame_index]
+                    processed_frame = self._process_frame(timestamp, frame)
+                    if self.display_video:
+                        self._display_video(processed_frame)
+                # If frame buffer exhausted, wait 10ms before checking again
+                time.sleep(0.010)
+
+        except Exception as ex:
+            logger.exception(ex)
 
     def stop(self):
         self._running = False
