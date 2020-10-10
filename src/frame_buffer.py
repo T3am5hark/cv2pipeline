@@ -33,6 +33,7 @@ class FrameBuffer:
 
         self.buffer[idx] = (timestamp, frame)
         self._frame_index = idx
+        self._frame_count += 1
 
     def get_current_frame(self):
         return self.buffer[self._frame_index]

@@ -13,13 +13,13 @@ logger = get_default_logger()
 class FrameProcessor:
 
     def __init__(self, vflip=False, hflip=False,
-                 buffer: FrameBuffer=None,
+                 frame_buffer: FrameBuffer=None,
                  usb_device=0, sleep_time_s=0.0):
         self.vflip = vflip
         self.hflip = hflip
-        if buffer is None:
-            buffer = FrameBuffer()
-        self.buffer = buffer
+        if frame_buffer is None:
+            frame_buffer = FrameBuffer()
+        self.buffer = frame_buffer
         self._stopped = True
         self._usb_device = usb_device
         self._video_capture = None

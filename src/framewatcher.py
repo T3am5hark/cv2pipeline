@@ -54,6 +54,8 @@ class FrameWatcher:
 
             logger.info('{} running'.format(self.name))
             self._prev_timestamp = datetime.now()
+            last_log = datetime.now()
+
             while self._running:
                 while self._frame_index != self._buffer.frame_index:
                     self._frame_index = (self._frame_index + 1) % self._buffer.buffer_len
@@ -67,6 +69,9 @@ class FrameWatcher:
                         logger.info('{} heartbeat {}'.format(self.name, self._buffer.frame_count))
                 # If frame buffer exhausted, wait 10ms before checking again
                 time.sleep(0.010)
+
+                if (datetime.now()-last_log).total_seconds() > 10:
+                    logger.info('{} heartbeat {}'.format(self.name, self._buffer.frame_count))
 
         except Exception as ex:
             logger.error('Exception caught in {}'.format(self.name))
