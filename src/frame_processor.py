@@ -100,14 +100,13 @@ class PicamFrameProcessor(FrameProcessor):
         pass
 
 
-def test(display_video=False):
-    init_logging()
+def test(display=False):
     logger.info('Testing video capture')
 
     processor = FrameProcessor()
 
-    watcher = FrameWatcher(buffer=processor.buffer,
-                           display_video=display_video)
+    watcher = FrameWatcher(frame_buffer=processor.buffer,
+                           display_video=display)
     watcher.run()
 
     processor.run()
@@ -129,11 +128,14 @@ def test(display_video=False):
 
 
 if __name__ == '__main__':
+    init_logging()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--display_video', type=bool, default=False,
                         help='(True/False) display video in LXDE window')
     args = parser.parse_args()
     display_video = vars(args)['display_video']
+
+    logger.info('display_video={}'.format(display_video))
 
     test(display_video=display_video)

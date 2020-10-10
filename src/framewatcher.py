@@ -24,7 +24,7 @@ class FrameWatcher:
                  name='WatcherProcess',
                  display_video:bool = False,
                  display_window_name = None):
-        self._buffer = buffer
+        self._buffer = frame_buffer
         self._frame_index = 0
         self._thread = None
         self._running = False
