@@ -50,17 +50,16 @@ class FrameWatcher:
 
     def _watch(self):
 
-        logger.info('{} running'.format(self.name))
-
-        self._prev_timestamp = datetime.now()
-
         try:
 
+            logger.info('{} running'.format(self.name))
+            self._prev_timestamp = datetime.now()
             while self._running:
                 while self._frame_index != self._buffer.frame_index:
                     self._frame_index = (self._frame_index + 1) % self._buffer.buffer_len
                     timestamp, frame = self._buffer.buffer[self._frame_index]
                     processed_frame = self._process_frame(timestamp, frame)
+                    self._prev_timestamp = timestamp
                     if self.display_video:
                         self._display_video(processed_frame)
 
@@ -70,6 +69,7 @@ class FrameWatcher:
                 time.sleep(0.010)
 
         except Exception as ex:
+            logger.error('Exception caught in {}'.format(self.name))
             logger.exception(ex)
 
     def stop(self):
