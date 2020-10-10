@@ -46,6 +46,7 @@ class FrameWatcher:
     def run(self):
 
         self._thread = Thread(target=self._watch, args=())
+        self._running = True
         self._thread.start()
 
     def _watch(self):
