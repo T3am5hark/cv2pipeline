@@ -95,8 +95,10 @@ class FrameWatcher:
         fps = 1.0 / time_delta
         text = '{:.02f}'.format(fps)
 
-        processed_frame = cv2.putText(frame, text=text, org=(10, 10), color=(0,0,0))
-        processed_frame = cv2.putText(processed_frame, text=text, org=(11, 11), color=(255,255,255))
+        processed_frame = cv2.putText(frame, text, (10, 10),
+                                      cv2.FONT_HERSHEY_COMPLEX, 4, (0,0,0), 1)
+        processed_frame = cv2.putText(processed_frame, text, (11, 11),
+                                      cv2.FONT_HERSHEY_COMPLEX, 4, (255,255,255), 1)
 
         return processed_frame
 
