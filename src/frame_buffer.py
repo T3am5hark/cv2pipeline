@@ -4,7 +4,7 @@ import cv2
 
 class FrameBuffer:
 
-    def __init__(self, n_frames=5):
+    def __init__(self, n_frames=10):
 
         self._frame_index = n_frames-1
         self.buffer = list()
