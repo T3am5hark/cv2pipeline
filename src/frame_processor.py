@@ -1,12 +1,14 @@
 import cv2
 import time
-import sys, argparse
+import argparse
+import readchar
 from datetime import datetime
 from threading import Thread
 
 from src.frame_buffer import FrameBuffer
 from src.framewatcher import FrameWatcher
 from src.util.log_utils import get_default_logger, init_logging
+from src.util.general import filename_timestamp
 
 logger = get_default_logger()
 
@@ -124,7 +126,21 @@ def test(display=False):
             prevtime=current_time
             last_framecount = processor.frame_count
 
+        k = readchar.readkey()
+
+        if k == 'q':
+            logger.info('Stopping threads...')
+            break
+
+        if k == 'g':
+            fname = filename_timestamp() + '.jpeg'
+            cv2.imwrite(fname, processor.buffer.get_current_frame())
+            logger.info('Saved frame as {}'.format(fname))
+
         time.sleep(0.01)
+
+    watcher.stop()
+    processor.stop()
 
 
 if __name__ == '__main__':
