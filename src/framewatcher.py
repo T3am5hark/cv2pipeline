@@ -94,16 +94,17 @@ class FrameWatcher:
 
         time_delta = (timestamp - self._prev_timestamp).total_seconds()
         fps = 1.0 / time_delta
-        text = '{:.02f}'.format(fps)
+        text = '{} {:.02f} FPS'.format(self.name, fps)
 
         frame_shape = frame.shape
-        origin_shadow = (10, 10)
-        origin = (11, 11)
+        origin_shadow = (10, 15)
+        origin = (11, 16)
+        text_color = (200, 100, 50)
 
         processed_frame = cv2.putText(frame, text, origin_shadow,
-                                      cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,0,0), 1)
-        processed_frame = cv2.putText(processed_frame, text, origin,
-                                      cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255), 1)
+                                      cv2.FONT_HERSHEY_COMPLEX, 0.5, text_color, 1)
+        #processed_frame = cv2.putText(processed_frame, text, origin,
+        #                              cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255), 1)
 
         return processed_frame
 
