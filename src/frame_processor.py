@@ -112,7 +112,7 @@ def test(display=False, vflip=False, hflip=False):
     processor.run()
     prevtime=datetime.now()
 
-    fps_frames = 50
+    fps_frames = 600
     last_framecount = 0
 
     while True:
@@ -120,11 +120,11 @@ def test(display=False, vflip=False, hflip=False):
             current_time=datetime.now()
             delta_s = (current_time-prevtime).total_seconds()
             fps = float(processor.frame_count-last_framecount) / delta_s
-            logger.info('{:07d} {:.02f} FPS'.format(processor.frame_count, fps))
+            logger.info('{:08d} {:.02f} FPS'.format(processor.frame_count, fps))
             prevtime=current_time
             last_framecount = processor.frame_count
 
-        time.sleep(0.01)
+        time.sleep(0.05)
 
 
 if __name__ == '__main__':
