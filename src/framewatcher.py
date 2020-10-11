@@ -126,8 +126,12 @@ class FrameWatcher:
                                       cv2.FONT_HERSHEY_SIMPLEX, 0.4, text_color, 1)
         #processed_frame = cv2.putText(processed_frame, text, origin,
         #                              cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255), 1)
+        processed_frame = self._custom_processing(timestamp, processed_frame)
 
         return processed_frame
+
+    def _custom_processing(self, timestamp, frame):
+        return frame
 
     def _display_video(self, frame):
         cv2.imshow(self.display_window_name, frame)

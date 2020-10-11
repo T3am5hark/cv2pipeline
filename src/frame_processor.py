@@ -7,6 +7,7 @@ from threading import Thread
 
 from src.frame_buffer import FrameBuffer
 from src.framewatcher import FrameWatcher
+from src.mobilenet_watcher import MobileNetWatcher
 from src.util.log_utils import get_default_logger, init_logging
 from src.util.general import filename_timestamp
 
@@ -102,13 +103,20 @@ class PicamFrameProcessor(FrameProcessor):
         pass
 
 
-def test(display=False, vflip=False, hflip=False):
+def test(display=False, vflip=False, hflip=False, detect=False):
     logger.info('Testing video capture')
 
     processor = FrameProcessor(vflip=vflip, hflip=hflip)
 
-    watcher = FrameWatcher(frame_buffer=processor.buffer,
-                           display_video=display)
+    # watcher = FrameWatcher(frame_buffer=processor.buffer,
+    #                       display_video=display)
+    if detect:
+        watcher = MobileNetWatcher(frame_buffer=processor.buffer,
+                                   display_video=display)
+    else:
+        watcher = FrameWatcher(frame_buffer=processor.buffer,
+                               display_video=display)
+
     watcher.run()
 
     processor.run()
@@ -134,7 +142,8 @@ def test(display=False, vflip=False, hflip=False):
 
         if k == 'g':
             fname = filename_timestamp() + '.jpeg'
-            cv2.imwrite(fname, processor.buffer.get_current_frame())
+            timestamp, frame = processor.buffer.get_current_frame()
+            cv2.imwrite(fname, frame)
             logger.info('Saved frame as {}'.format(fname))
 
         time.sleep(0.01)
