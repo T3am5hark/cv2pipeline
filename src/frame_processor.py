@@ -108,17 +108,19 @@ def test(display=False, vflip=False, hflip=False, detect=False):
 
     processor = FrameProcessor(vflip=vflip, hflip=hflip)
 
+    watchers = []
     # watcher = FrameWatcher(frame_buffer=processor.buffer,
     #                       display_video=display)
     if detect:
         watcher = MobileNetWatcher(frame_buffer=processor.buffer,
                                    display_video=display)
-        watcher.run()
+        watchers.append(watcher)
 
     watcher = FrameWatcher(frame_buffer=processor.buffer,
                            display_video=display)
-
-    watcher.run()
+    watchers.append(watcher)
+    for watcher in watchers:
+        watcher.run()
 
     processor.run()
     prevtime=datetime.now()
@@ -149,7 +151,8 @@ def test(display=False, vflip=False, hflip=False, detect=False):
 
         time.sleep(0.01)
 
-    watcher.stop()
+    for watcher in watchers:
+        watcher.stop()
     processor.stop()
 
 
