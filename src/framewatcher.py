@@ -64,7 +64,7 @@ class FrameWatcher:
             last_log = datetime.now()
 
             while self._running:
-                while self._frame_index != self._buffer.frame_index:
+                while self._frame_index != self._buffer.frame_index and self._running:
                     self._frame_index = (self._frame_index + 1) % self._buffer.buffer_len
 
                     frame_tuple = self._buffer.buffer[self._frame_index]
@@ -105,6 +105,8 @@ class FrameWatcher:
         return self._fps
 
     def _process_frame(self, timestamp, frame):
+
+        frame = np.array(frame)
 
         time_delta = (timestamp - self._prev_timestamp).total_seconds()
         fps = self._track_fps()

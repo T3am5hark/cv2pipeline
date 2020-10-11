@@ -17,6 +17,7 @@ class MobileNetWatcher(FrameWatcher):
                  model='MobileNetSSD_deploy.caffemodel',
                  proto='MobileNetSSD_deploy.prototxt',
                  name = 'MobileNetWatcher',
+                 display_window_name=None,
                  confidence_threshold=0.4,
                  **kwargs):
 
@@ -26,6 +27,8 @@ class MobileNetWatcher(FrameWatcher):
         logger.info('{} reading model file')
         self._net = cv2.dnn.readNetFromCaffe(self._proto_path, self._model_path)
         super().__init__(**kwargs)
+        if display_window_name is None:
+            self.display_window_name = name
         self.name = name
 
         logger.info('{}'.format(self.display_video))
@@ -46,7 +49,7 @@ class MobileNetWatcher(FrameWatcher):
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (startX, startY, endX, endY) = box.astype('int')
                 label = '{}: {:.02f}%'.format(self.CLASSES[idx], confidence*100)
-                logger.info(label)
+                logger.info(label+'\n')
                 cv2.rectangle(frame, (startX, startY), (endX, endY),
                               self.COLORS[idx], 2)
                 y = startY - 15 if startY - 15 > 15 else startY + 15

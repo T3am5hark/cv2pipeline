@@ -113,9 +113,10 @@ def test(display=False, vflip=False, hflip=False, detect=False):
     if detect:
         watcher = MobileNetWatcher(frame_buffer=processor.buffer,
                                    display_video=display)
-    else:
-        watcher = FrameWatcher(frame_buffer=processor.buffer,
-                               display_video=display)
+        watcher.run()
+
+    watcher = FrameWatcher(frame_buffer=processor.buffer,
+                           display_video=display)
 
     watcher.run()
 
@@ -162,13 +163,16 @@ if __name__ == '__main__':
                         help='(True/False) vertically flip video')
     parser.add_argument('--hflip', type=bool, default=False,
                         help='(True/False) horizontally flip video')
+    parser.add_argument('--detect', type=bool, default=False,
+                        help='(True/False) use MobileNet detection')
     args = parser.parse_args()
     display_video = vars(args)['display_video']
     vflip = vars(args)['vflip']
     hflip = vars(args)['hflip']
+    detect = vars(args)['detect']
 
     logger.info('display_video={}'.format(display_video))
     logger.info('vflip={}'.format(vflip))
     logger.info('hflip={}'.format(hflip))
 
-    test(display=display_video, vflip=vflip, hflip=hflip)
+    test(display=display_video, vflip=vflip, hflip=hflip, detect=detect)
