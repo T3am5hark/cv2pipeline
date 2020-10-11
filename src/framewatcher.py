@@ -79,6 +79,7 @@ class FrameWatcher:
 
                 if (datetime.now()-last_log).total_seconds() > 10:
                     logger.info('{} heartbeat {}'.format(self.name, self._buffer.frame_count))
+                    last_log = datetime.now()
 
         except Exception as ex:
             logger.error('Exception caught in {}'.format(self.name))
@@ -95,13 +96,17 @@ class FrameWatcher:
         fps = 1.0 / time_delta
         text = '{:.02f}'.format(fps)
 
-        processed_frame = cv2.putText(frame, text, (10, 10),
-                                      cv2.FONT_HERSHEY_COMPLEX, 4, (0,0,0), 1)
-        processed_frame = cv2.putText(processed_frame, text, (11, 11),
-                                      cv2.FONT_HERSHEY_COMPLEX, 4, (255,255,255), 1)
+        frame_shape = frame.shape
+        origin_shadow = (10, 10)
+        origin = (11, 11)
+
+        processed_frame = cv2.putText(frame, text, origin_shadow,
+                                      cv2.FONT_HERSHEY_COMPLEX, 0.5, (0,0,0), 1)
+        processed_frame = cv2.putText(processed_frame, text, origin,
+                                      cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255), 1)
 
         return processed_frame
 
     def _display_video(self, frame):
         cv2.imshow(self.display_window_name, frame)
-        cv2.waitkey(1) # 1ms wait
+        cv2.waitKey(1) # 1ms wait

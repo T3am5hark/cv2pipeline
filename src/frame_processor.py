@@ -100,10 +100,10 @@ class PicamFrameProcessor(FrameProcessor):
         pass
 
 
-def test(display=False):
+def test(display=False, vflip=False, hflip=False):
     logger.info('Testing video capture')
 
-    processor = FrameProcessor()
+    processor = FrameProcessor(vflip=vflip, hflip=hflip)
 
     watcher = FrameWatcher(frame_buffer=processor.buffer,
                            display_video=display)
@@ -133,9 +133,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--display_video', type=bool, default=False,
                         help='(True/False) display video in LXDE window')
+    parser.add_argument('--vflip', type=bool, default=False,
+                        help='(True/False) vertically flip video')
+    parser.add_argument('--hflip', type=bool, default=False,
+                        help='(True/False) horizontally flip video')
     args = parser.parse_args()
     display_video = vars(args)['display_video']
+    vflip = vars(args)['vflip']
+    hflip = vars(args)['hflip']
 
     logger.info('display_video={}'.format(display_video))
+    logger.info('vflip={}'.format(vflip))
+    logger.info('hflip={}'.format(hflip))
 
-    test(display=display_video)
+    test(display=display_video, vflip=vflip, hflip=hflip)
