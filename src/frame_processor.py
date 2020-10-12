@@ -9,6 +9,7 @@ from src.frame_buffer import FrameBuffer
 from src.framewatcher import FrameWatcher
 from src.mobilenet_watcher import MobileNetWatcher
 from src.mobilenet_tiny_watcher import MobileNetTinyWatcher
+from src.haar_face_watcher import HaarFaceWatcher
 from src.util.log_utils import get_default_logger, init_logging
 from src.util.general import filename_timestamp
 
@@ -113,10 +114,12 @@ def test(display=False, vflip=False, hflip=False, detect=False):
     # watcher = FrameWatcher(frame_buffer=processor.buffer,
     #                       display_video=display)
     if detect:
-        watcher = MobileNetWatcher(frame_buffer=processor.buffer,
-                                   display_video=display)
+        #watcher = MobileNetWatcher(frame_buffer=processor.buffer,
+        #                           display_video=display)
         #watcher = MobileNetTinyWatcher(frame_buffer=processor.buffer,
         #                               display_video=display)
+        watcher = HaarFaceWatcher(frame_buffer=processor.buffer,
+                                  display_video=display)
         watchers.append(watcher)
 
     watcher = FrameWatcher(frame_buffer=processor.buffer,
