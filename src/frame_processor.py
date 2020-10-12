@@ -8,6 +8,7 @@ from threading import Thread
 from src.frame_buffer import FrameBuffer
 from src.framewatcher import FrameWatcher
 from src.mobilenet_watcher import MobileNetWatcher
+from src.mobilenet_tiny_watcher import MobileNetTinyWatcher
 from src.util.log_utils import get_default_logger, init_logging
 from src.util.general import filename_timestamp
 
@@ -114,6 +115,8 @@ def test(display=False, vflip=False, hflip=False, detect=False):
     if detect:
         watcher = MobileNetWatcher(frame_buffer=processor.buffer,
                                    display_video=display)
+        #watcher = MobileNetTinyWatcher(frame_buffer=processor.buffer,
+        #                               display_video=display)
         watchers.append(watcher)
 
     watcher = FrameWatcher(frame_buffer=processor.buffer,

@@ -24,7 +24,7 @@ class MobileNetWatcher(FrameWatcher):
         self._model_path = model
         self._proto_path = proto
         self._confidence_threshold = confidence_threshold
-        logger.info('{} reading model file')
+        logger.info('{} reading model file'.format(name))
         self._net = cv2.dnn.readNetFromCaffe(self._proto_path, self._model_path)
         super().__init__(**kwargs)
         if display_window_name is None:
