@@ -40,6 +40,7 @@ class FrameWatcher:
         self._fps_counter=0
         self._fps_time = datetime.now()
         self._fps = 0.0
+        self._text_size = 0.4
 
     @property
     def frame_index(self):
@@ -125,7 +126,8 @@ class FrameWatcher:
         text_color = (150, 120, 50)
 
         processed_frame = cv2.putText(processed_frame, text, origin,
-                                      cv2.FONT_HERSHEY_SIMPLEX, 0.4, text_color, 1)
+                                      cv2.FONT_HERSHEY_SIMPLEX,
+                                      self._text_size, text_color, 1)
         #processed_frame = cv2.putText(processed_frame, text, origin,
         #                              cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255), 1)
         processed_frame = self._custom_processing(timestamp, processed_frame)

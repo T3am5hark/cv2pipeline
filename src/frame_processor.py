@@ -7,8 +7,8 @@ from threading import Thread
 
 from src.frame_buffer import FrameBuffer
 from src.framewatcher import FrameWatcher
-from src.mobilenet_watcher import MobileNetWatcher
-from src.mobilenet_tiny_watcher import MobileNetTinyWatcher
+# from src.mobilenet_watcher import MobileNetWatcher
+# from src.mobilenet_tiny_watcher import MobileNetTinyWatcher
 from src.haar_face_watcher import HaarFaceWatcher
 from src.util.log_utils import get_default_logger, init_logging
 from src.util.general import filename_timestamp
@@ -119,11 +119,19 @@ def test(display=False, vflip=False, hflip=False, detect=False):
         #watcher = MobileNetTinyWatcher(frame_buffer=processor.buffer,
         #                               display_video=display)
         watcher = HaarFaceWatcher(frame_buffer=processor.buffer,
-                                  display_video=display)
+                                  display_video=display,
+                                  scale_factor=0.5,
+                                  full_detection_frame=True)
         watchers.append(watcher)
+    if detect_motion:
+        watcher = MotionWatcher(frame_buffer=processor.buffer,
+                                display_video=display,
+                                scale_factor=0.5,
+                                full_detection_frame=True)
+        watchers.add(watcher)
 
-    watcher = FrameWatcher(frame_buffer=processor.buffer,
-                           display_video=display)
+    # watcher = FrameWatcher(frame_buffer=processor.buffer,
+    #                        display_video=display)
     watchers.append(watcher)
     for watcher in watchers:
         watcher.run()
@@ -174,11 +182,14 @@ if __name__ == '__main__':
                         help='(True/False) horizontally flip video')
     parser.add_argument('--detect', type=bool, default=False,
                         help='(True/False) use MobileNet detection')
+    parser.add_argument('--detect_motion', type=bool, default=False,
+                        help='(True/False) use MotionDetector')
     args = parser.parse_args()
     display_video = vars(args)['display_video']
     vflip = vars(args)['vflip']
     hflip = vars(args)['hflip']
     detect = vars(args)['detect']
+    motion = vars(args)['detect_motion']
 
     logger.info('display_video={}'.format(display_video))
     logger.info('vflip={}'.format(vflip))
