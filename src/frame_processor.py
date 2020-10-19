@@ -9,6 +9,7 @@ from src.frame_buffer import FrameBuffer
 from src.framewatcher import FrameWatcher
 # from src.mobilenet_watcher import MobileNetWatcher
 # from src.mobilenet_tiny_watcher import MobileNetTinyWatcher
+from src.motion_watcher import MotionWatcher
 from src.haar_face_watcher import HaarFaceWatcher
 from src.util.log_utils import get_default_logger, init_logging
 from src.util.general import filename_timestamp
@@ -105,7 +106,8 @@ class PicamFrameProcessor(FrameProcessor):
         pass
 
 
-def test(display=False, vflip=False, hflip=False, detect=False):
+def test(display=False, vflip=False, hflip=False,
+         detect=False, detect_motion=False):
     logger.info('Testing video capture')
 
     processor = FrameProcessor(vflip=vflip, hflip=hflip)
@@ -120,20 +122,22 @@ def test(display=False, vflip=False, hflip=False, detect=False):
         #                               display_video=display)
         watcher = HaarFaceWatcher(frame_buffer=processor.buffer,
                                   display_video=display,
-                                  scale_factor=0.5,
+                                  scale_factor=0.4,
                                   full_detection_frame=True)
         watchers.append(watcher)
+
     if detect_motion:
         watcher = MotionWatcher(frame_buffer=processor.buffer,
                                 display_video=display,
                                 scale_factor=0.5,
                                 full_detection_frame=True)
-        watchers.add(watcher)
+        watchers.append(watcher)
 
     # watcher = FrameWatcher(frame_buffer=processor.buffer,
     #                        display_video=display)
-    watchers.append(watcher)
+    # watchers.append(watcher)
     for watcher in watchers:
+        logger.info('Starting {}'.format(watcher.name))
         watcher.run()
 
     processor.run()
@@ -189,10 +193,11 @@ if __name__ == '__main__':
     vflip = vars(args)['vflip']
     hflip = vars(args)['hflip']
     detect = vars(args)['detect']
-    motion = vars(args)['detect_motion']
+    detect_motion = vars(args)['detect_motion']
 
     logger.info('display_video={}'.format(display_video))
     logger.info('vflip={}'.format(vflip))
     logger.info('hflip={}'.format(hflip))
 
-    test(display=display_video, vflip=vflip, hflip=hflip, detect=detect)
+    test(display=display_video, vflip=vflip, hflip=hflip,
+         detect=detect, detect_motion=detect_motion)

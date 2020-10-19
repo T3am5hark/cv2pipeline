@@ -11,14 +11,14 @@ class MotionWatcher(FrameWatcher):
 
     def __init__(self, name = 'MotionWatcher',
                  scale_factor = 0.5,
-                 threshold=0.2,
+                 threshold = 0.99,
                  display_window_name=None,
                  full_detection_frame=False,
                  **kwargs):
 
         super().__init__(name=name, display_window_name=display_window_name, **kwargs)
         self._scale_factor = scale_factor
-        self._threshold = 0.2
+        self._threshold = threshold
         self._prev_frame = None
         self._full_detection_frame = full_detection_frame
         if not self._full_detection_frame:
@@ -30,16 +30,23 @@ class MotionWatcher(FrameWatcher):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.resize(gray, (int(frame_shape[1]*self._scale_factor),
                                  int(frame_shape[0]*self._scale_factor)))
+        display_gray= gray
         if self._prev_frame is not None:
-            delta = np.abs(gray - prev_frame)
-            mask = (delta > 255*self._threshold).astype(int)
+            delta = np.abs(gray - self._prev_frame)
+            mask = (delta > self._threshold*255)
 
-            frame = [:,:,0] = 0.5*frame[:,:,0] + 0.5*mask*frame[:,:,0]
-            frame = [:,:,1] = 0.5*frame[:,:,1] + 0.5*mask*frame[:,:,1]
-            frame = [:,:,2] = 0.5*frame[:,:,2] + 0.5*mask*frame[:,:,2]
+            # print(np.mean(delta), np.min(delta), np.max(delta), np.sum(mask))
 
-            gray = gray * mask
+            if self._full_detection_frame:
+                frame = cv2.resize(frame, (int(frame_shape[1]*self._scale_factor),
+                                   int(frame_shape[0]*self._scale_factor)))
+                # new_mask = cv2.resize(mask, (frame_shape[1], frame_shape[0]))
+                #for i in range(0,3):
+                i = 0
+                frame[:,:,i] = mask*frame[:,:,i]
+
+            display_gray = gray * mask
 
         self._prev_frame = gray
 
-        return frame if self._full_detection_frame else gray
+        return frame if self._full_detection_frame else display_gray
