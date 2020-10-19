@@ -1,2 +1,8 @@
+*.pb
 *.prototxt
 *.caffemodel
+*.AppleDouble
+/bin
+/include
+/lib
+__pycache__

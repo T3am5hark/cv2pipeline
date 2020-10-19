@@ -11,7 +11,7 @@ class MotionWatcher(FrameWatcher):
 
     def __init__(self, name = 'MotionWatcher',
                  scale_factor = 0.5,
-                 threshold = 0.99,
+                 threshold = 0.05,
                  display_window_name=None,
                  full_detection_frame=False,
                  **kwargs):
@@ -32,20 +32,20 @@ class MotionWatcher(FrameWatcher):
                                  int(frame_shape[0]*self._scale_factor)))
         display_gray= gray
         if self._prev_frame is not None:
-            delta = np.abs(gray - self._prev_frame)
+            delta = np.abs(gray.astype(int) - self._prev_frame.astype(int))
             mask = (delta > self._threshold*255)
-
-            # print(np.mean(delta), np.min(delta), np.max(delta), np.sum(mask))
 
             if self._full_detection_frame:
                 frame = cv2.resize(frame, (int(frame_shape[1]*self._scale_factor),
                                    int(frame_shape[0]*self._scale_factor)))
                 # new_mask = cv2.resize(mask, (frame_shape[1], frame_shape[0]))
                 #for i in range(0,3):
-                i = 0
-                frame[:,:,i] = mask*frame[:,:,i]
+                for i in [0, 1]:
+                    #frame[:,:,i] = frame[:,:,i] - 0.5*np.logical_not(mask)*frame[:,:,i]
+                    frame[:,:,i] = np.minimum(frame[:,:,i]+(2-i)*mask*frame[:,:,i], 255)
 
-            display_gray = gray * mask
+            else:
+                display_gray = gray * mask
 
         self._prev_frame = gray
 
