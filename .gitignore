@@ -1,3 +1,2 @@
-.AppleDouble
-
-/bin
+*.prototxt
+*.caffemodel
