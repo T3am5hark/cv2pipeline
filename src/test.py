@@ -44,7 +44,7 @@ def test(display=False, vflip=False, hflip=False,
     if detect_motion:
         watcher = MotionWatcher(frame_buffer=processor.buffer,
                                 display_video=display,
-                                scale_factor=0.25,
+                                scale_factor=0.35,
                                 full_detection_frame=True)
         watchers.append(watcher)
 

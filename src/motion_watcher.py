@@ -12,11 +12,12 @@ class MotionWatcher(FrameWatcher):
 
     def __init__(self, name = 'MotionWatcher',
                  scale_factor = 0.5,
-                 threshold = 0.05,
+                 threshold = 0.08,
                  display_window_name=None,
                  full_detection_frame=False,
                  min_area=49,
-                 memory=0.85,
+                 memory=0.75,
+                 subtract_motion=False,
                  **kwargs):
 
         super().__init__(name=name, display_window_name=display_window_name, **kwargs)
@@ -28,13 +29,17 @@ class MotionWatcher(FrameWatcher):
             self._text_size = self._text_size / scale_factor
         self._min_area = min_area
         self._memory = memory
+        self._subtract_motion = subtract_motion
 
     def _custom_processing(self, timestamp, frame):
 
         frame_shape = frame.shape
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        gray = cv2.resize(gray, (int(frame_shape[1]*self._scale_factor),
+        #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #gray = cv2.resize(gray, (int(frame_shape[1]*self._scale_factor),
+        #                         int(frame_shape[0]*self._scale_factor)))
+        gray = cv2.resize(frame, (int(frame_shape[1]*self._scale_factor),
                                  int(frame_shape[0]*self._scale_factor)))
+
         gray = cv2.GaussianBlur(gray, (11, 11), 0)
         display_gray = gray
         if self._prev_frame is None:
@@ -42,8 +47,12 @@ class MotionWatcher(FrameWatcher):
 
         # delta = np.abs(gray.astype(int) - self._prev_frame.astype(int))
         delta = cv2.absdiff(gray, self._prev_frame)
-        mask = cv2.threshold(delta, 255*self._threshold, 255, cv2.RETR_EXTERNAL)[1]
-        mask = cv2.dilate(mask, None, iterations=2)
+
+        delta_flat = cv2.cvtColor(delta, cv2.COLOR_BGR2GRAY)
+        #delta_flat = np.sum(delta, axis=2).astype(np.uint8)
+        mask = cv2.threshold(delta_flat, 255*self._threshold, 255, cv2.RETR_EXTERNAL)[1]
+        kernel = np.ones((4, 4), dtype=np.uint8)
+        mask = cv2.dilate(mask, kernel, iterations=1)
         # mask = (delta > self._threshold*255)
         contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
                                     cv2.CHAIN_APPROX_SIMPLE)
@@ -71,6 +80,27 @@ class MotionWatcher(FrameWatcher):
         else:
             display_gray = gray * mask
 
+        if self._subtract_motion:
+            prev_frame_copy = self._prev_frame.copy()
         self._prev_frame = (self._memory*self._prev_frame + (1.0-self._memory)*gray).astype(np.uint8)
+        if self._subtract_motion:
+            # Preserve background against incorporating moving object
+            for cnt in contours:
+                if cv2.contourArea(cnt) < self._min_area:
+                    continue
+
+                (x, y, w, h) = cv2.boundingRect(cnt)
+                s = 5
+                self._prev_frame[(x+s):(x+w-s), (y+s):(y+h-s)] = \
+                    prev_frame_copy[(x+s):(x+w-s), (y+s):(y+h-s)]
+
+        #motion_image = np.zeros((delta.shape[0],
+        #                         delta.shape[1], 3)).astype(np.uint8)
+        #motion_image[:,:,1] = delta/2
+        #motion_image[:,:,2] = delta
+
+        cv2.imshow('bg_image', delta)
+        cv2.waitKey(1)
+
 
         return frame if self._full_detection_frame else display_gray
