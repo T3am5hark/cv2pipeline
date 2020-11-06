@@ -15,7 +15,8 @@ class FrameProcessor:
 
     def __init__(self, vflip=False, hflip=False,
                  frame_buffer: FrameBuffer=None,
-                 usb_device=0, sleep_time_s=0.0):
+                 usb_device=0, sleep_time_s=0.0,
+                 frame_width=None, frame_height=None):
         self.vflip = vflip
         self.hflip = hflip
         if frame_buffer is None:
@@ -27,6 +28,8 @@ class FrameProcessor:
         self._thread = None
         self._frame_count = 0
         self._sleep_time_s = sleep_time_s
+        self._frame_width = frame_width
+        self._frame_height = frame_height
 
     @property
     def is_running(self):
@@ -67,6 +70,14 @@ class FrameProcessor:
     def _init_video_capture(self):
         logger.info('Initializing video capture from {}'.format(self._usb_device))
         self._video_capture = cv2.VideoCapture(self._usb_device)
+
+        if self._frame_height is not None:
+            self._video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT,
+                                    self._frame_height)
+        if self._frame_width is not None:
+            self._video_capture.set(cv2.CAP_PROP_FRAME_WIDTH,
+                                    self._frame_width)
+
 
     def _get_frame(self):
         success, frame = self._video_capture.read()
