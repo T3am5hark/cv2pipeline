@@ -58,6 +58,7 @@ class FrameProcessor:
         # Test frame
         ret, frame = self._video_capture.read()
         logger.info('Frame resolution = {}'.format(frame.shape))
+        logger.info('dtype={}'.format(str(frame.dtype)))
 
         self._thread = Thread(target=self._run_capture, args=())
         self._thread.start()

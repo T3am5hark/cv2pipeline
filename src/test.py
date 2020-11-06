@@ -44,7 +44,7 @@ def test(display=False, vflip=False, hflip=False,
     if detect_motion:
         watcher = MotionWatcher(frame_buffer=processor.buffer,
                                 display_video=display,
-                                scale_factor=0.5,
+                                scale_factor=0.25,
                                 full_detection_frame=True)
         watchers.append(watcher)
 
@@ -120,6 +120,8 @@ if __name__ == '__main__':
     logger.info('display_video={}'.format(display_video))
     logger.info('vflip={}'.format(vflip))
     logger.info('hflip={}'.format(hflip))
+    logger.info('frame_height={}'.format(frame_height))
+    logger.info('frame_width={}'.format(frame_width))
 
     test(display=display_video, vflip=vflip, hflip=hflip,
          detect=detect, detect_motion=detect_motion,
