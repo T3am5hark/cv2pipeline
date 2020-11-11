@@ -18,10 +18,13 @@ from src.util.general import filename_timestamp
 logger = get_default_logger()
 
 def test(display=False, vflip=False, hflip=False,
-         detect=False, detect_motion=False):
+         detect=False, detect_motion=False,
+         frame_width=None, frame_height=None):
     logger.info('Testing video capture')
 
-    processor = FrameProcessor(vflip=vflip, hflip=hflip)
+    processor = FrameProcessor(vflip=vflip, hflip=hflip,
+                               frame_height=frame_height,
+                               frame_width=frame_width)
 
     watchers = []
     # watcher = FrameWatcher(frame_buffer=processor.buffer,
@@ -41,7 +44,7 @@ def test(display=False, vflip=False, hflip=False,
     if detect_motion:
         watcher = MotionWatcher(frame_buffer=processor.buffer,
                                 display_video=display,
-                                scale_factor=0.5,
+                                scale_factor=0.35,
                                 full_detection_frame=True)
         watchers.append(watcher)
 
@@ -100,6 +103,10 @@ if __name__ == '__main__':
                         help='(True/False) use MobileNet detection')
     parser.add_argument('--detect_motion', type=bool, default=False,
                         help='(True/False) use MotionDetector')
+    parser.add_argument('--frame_height', type=int, default=None,
+                        help='Frame height (default None)')
+    parser.add_argument('--frame_width', type=int, default=None,
+                        help='Frame width (default None)')
     args = parser.parse_args()
     display_video = vars(args)['display_video']
     vflip = vars(args)['vflip']
@@ -107,9 +114,15 @@ if __name__ == '__main__':
     detect = vars(args)['detect']
     detect_motion = vars(args)['detect_motion']
 
+    frame_height = vars(args)['frame_height']
+    frame_width = vars(args)['frame_width']
+
     logger.info('display_video={}'.format(display_video))
     logger.info('vflip={}'.format(vflip))
     logger.info('hflip={}'.format(hflip))
+    logger.info('frame_height={}'.format(frame_height))
+    logger.info('frame_width={}'.format(frame_width))
 
     test(display=display_video, vflip=vflip, hflip=hflip,
-         detect=detect, detect_motion=detect_motion)
+         detect=detect, detect_motion=detect_motion,
+         frame_height=frame_height, frame_width=frame_width)
