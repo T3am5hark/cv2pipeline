@@ -17,7 +17,7 @@ class HaarFaceWatcher(FrameWatcher):
                  **kwargs):
 
         #self._cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-        fullpath = '/home/pi/jdm/python/envs/cv2pipeline/lib/python3.5/site-packages/cv2/data/haarcascade_frontalface_default.xml'
+        fullpath = '/home/pi/jdm/envs/cv2pipeline/lib/python3.7/site-packages/cv2/data/haarcascade_frontalface_default.xml'
         self._cascade = cv2.CascadeClassifier(fullpath)
         logger.info('{} loaded frontalface Haar cascade classifier'.format(name))
         logger.info('{}'.format(self._cascade.__class__))

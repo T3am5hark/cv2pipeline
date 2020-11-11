@@ -30,10 +30,18 @@ class MotionWatcher(FrameWatcher):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.resize(gray, (int(frame_shape[1]*self._scale_factor),
                                  int(frame_shape[0]*self._scale_factor)))
+        gray = cv2.GaussianBlur(gray, (7,7), 0)
         display_gray= gray
+
         if self._prev_frame is not None:
-            delta = np.abs(gray.astype(int) - self._prev_frame.astype(int))
-            mask = (delta > self._threshold*255)
+            #delta = np.abs(gray.astype(int) - self._prev_frame.astype(int))
+            #mask = (delta > self._threshold*255)
+            delta = cv2.absdiff(self._prev_frame, gray)
+            mask = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
+
+            mask = cv2.dilate(mask, None, iterations=2)
+            contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
+                                        cv2.CHAIN_APPROX_SIMPLE)
 
             if self._full_detection_frame:
                 frame = cv2.resize(frame, (int(frame_shape[1]*self._scale_factor),
