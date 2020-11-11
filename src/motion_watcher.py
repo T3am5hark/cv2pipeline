@@ -94,11 +94,6 @@ class MotionWatcher(FrameWatcher):
                 self._prev_frame[(x+s):(x+w-s), (y+s):(y+h-s)] = \
                     prev_frame_copy[(x+s):(x+w-s), (y+s):(y+h-s)]
 
-        #motion_image = np.zeros((delta.shape[0],
-        #                         delta.shape[1], 3)).astype(np.uint8)
-        #motion_image[:,:,1] = delta/2
-        #motion_image[:,:,2] = delta
-
         cv2.imshow('bg_image', delta)
         cv2.waitKey(1)
 

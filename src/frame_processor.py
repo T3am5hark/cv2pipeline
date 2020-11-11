@@ -61,8 +61,8 @@ class FrameProcessor:
         logger.info('dtype={}'.format(str(frame.dtype)))
 
         self._thread = Thread(target=self._run_capture, args=())
-        self._thread.start()
         self._stopped = False
+        self._thread.start()
 
     def stop(self):
         self._stopped = True
