@@ -61,8 +61,8 @@ class FrameProcessor:
         logger.info('dtype={}'.format(str(frame.dtype)))
 
         self._thread = Thread(target=self._run_capture, args=())
-        self._thread.start()
         self._stopped = False
+        self._thread.start()
 
     def stop(self):
         self._stopped = True
@@ -71,6 +71,10 @@ class FrameProcessor:
     def _init_video_capture(self):
         logger.info('Initializing video capture from {}'.format(self._usb_device))
         self._video_capture = cv2.VideoCapture(self._usb_device)
+
+        if not self._video_capture.isOpened():
+            logger.info('Opening video capture...')
+            self._video_capture.open()
 
         if self._frame_height is not None:
             self._video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT,
@@ -88,6 +92,7 @@ class FrameProcessor:
 
         while True:
             if self._stopped:
+                logger.info('Frame capture thread stopped.')
                 return
             success, frame = self._video_capture.read()
             if success:
@@ -100,6 +105,8 @@ class FrameProcessor:
 
                 self.buffer.new_frame(frame)
                 self._frame_count += 1
+            else:
+                logger.debug('Error reading video frame (fc={})'.format(self._frame_count))
 
             time.sleep(self._sleep_time_s)
 
@@ -114,4 +121,3 @@ class PicamFrameProcessor(FrameProcessor):
 
     def _run_capture(self):
         pass
-

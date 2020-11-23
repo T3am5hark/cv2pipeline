@@ -40,7 +40,7 @@ class FrameWatcher:
         self._fps_counter=0
         self._fps_time = datetime.now()
         self._fps = 0.0
-        self._text_size = 0.4
+        self._text_size = 0.5
 
     @property
     def frame_index(self):
@@ -74,7 +74,7 @@ class FrameWatcher:
                         continue
 
                     timestamp, frame = frame_tuple
-                    processed_frame = self._process_frame(timestamp, frame)
+                    processed_frame, events = self._process_frame(timestamp, frame)
                     self._prev_timestamp = timestamp
                     if self.display_video:
                         self._display_video(processed_frame)
@@ -111,11 +111,12 @@ class FrameWatcher:
 
         time_delta = (timestamp - self._prev_timestamp).total_seconds()
         fps = self._track_fps()
-        text = '{} {:.02f} FPS'.format(self.name, fps)
+        text = '{} {:.01f} FPS'.format(self.name, fps)
 
         processed_frame = frame
 
-        color_index = self._buffer.frame_index+1
+        # color_index = self._buffer.frame_index+1
+        color_index = 0
         radius = 4
         processed_frame = cv2.circle(processed_frame, (8,12),
                                      radius, (10+10*color_index, 40+30*color_index, 200), 2)
@@ -128,14 +129,13 @@ class FrameWatcher:
         processed_frame = cv2.putText(processed_frame, text, origin,
                                       cv2.FONT_HERSHEY_SIMPLEX,
                                       self._text_size, text_color, 1)
-        #processed_frame = cv2.putText(processed_frame, text, origin,
-        #                              cv2.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255), 1)
-        processed_frame = self._custom_processing(timestamp, processed_frame)
+        processed_frame, events = self._custom_processing(timestamp, processed_frame)
 
-        return processed_frame
+        return processed_frame, events
 
     def _custom_processing(self, timestamp, frame):
-        return frame
+        events = list()
+        return frame, events
 
     def _display_video(self, frame):
         cv2.imshow(self.display_window_name, frame)

@@ -17,6 +17,8 @@ class MotionWatcher(FrameWatcher):
                  full_detection_frame=False,
                  min_area=49,
                  memory=0.75,
+                 gaussian_blur_size=(11, 11),
+                 dilation_kernel_size=(5, 5),
                  subtract_motion=False,
                  **kwargs):
 
@@ -29,6 +31,8 @@ class MotionWatcher(FrameWatcher):
             self._text_size = self._text_size / scale_factor
         self._min_area = min_area
         self._memory = memory
+        self._gaussian_blur_size = gaussian_blur_size
+        self._dilation_kernel_size = dilation_kernel_size
         self._subtract_motion = subtract_motion
 
     def _custom_processing(self, timestamp, frame):
@@ -40,7 +44,7 @@ class MotionWatcher(FrameWatcher):
         gray = cv2.resize(frame, (int(frame_shape[1]*self._scale_factor),
                                  int(frame_shape[0]*self._scale_factor)))
 
-        gray = cv2.GaussianBlur(gray, (11, 11), 0)
+        gray = cv2.GaussianBlur(gray, self._gaussian_blur_size, 0)
         display_gray = gray
         if self._prev_frame is None:
             self._prev_frame = gray.copy()
@@ -51,7 +55,7 @@ class MotionWatcher(FrameWatcher):
         delta_flat = cv2.cvtColor(delta, cv2.COLOR_BGR2GRAY)
         #delta_flat = np.sum(delta, axis=2).astype(np.uint8)
         mask = cv2.threshold(delta_flat, 255*self._threshold, 255, cv2.RETR_EXTERNAL)[1]
-        kernel = np.ones((4, 4), dtype=np.uint8)
+        kernel = np.ones(self._dilation_kernel_size, dtype=np.uint8)
         mask = cv2.dilate(mask, kernel, iterations=1)
         # mask = (delta > self._threshold*255)
         contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
@@ -66,6 +70,8 @@ class MotionWatcher(FrameWatcher):
             #for i in [0, 1, 2]:
             #    frame[:,:,i] = np.minimum(frame[:,:,i]+0.25*(mask/255)*frame[:,:,i], 255)
 
+
+            events = list()
             for cnt in contours:
                 if cv2.contourArea(cnt) < self._min_area:
                     continue
@@ -76,6 +82,9 @@ class MotionWatcher(FrameWatcher):
                 w = int(w / self._scale_factor)
                 h = int(h / self._scale_factor)
                 cv2.rectangle(frame, (x,y), (x+w, y+h), (225, 175, 35), 2)
+
+                event = (x, y, w, h)
+                events.append(event)
 
         else:
             display_gray = gray * mask
@@ -102,5 +111,4 @@ class MotionWatcher(FrameWatcher):
         cv2.imshow('bg_image', delta)
         cv2.waitKey(1)
 
-
-        return frame if self._full_detection_frame else display_gray
+        return (frame, events) if self._full_detection_frame else (display_gray, events)
