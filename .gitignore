@@ -2,6 +2,9 @@
 *.prototxt
 *.caffemodel
 *.AppleDouble
+*.pyc
+*.jpeg
+*.json
 /bin
 /include
 /lib
