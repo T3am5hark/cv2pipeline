@@ -40,9 +40,13 @@ class MobileNetWatcher(FrameWatcher):
         self._net.setInput(blob)
         detections = self._net.forward()
 
+        events = list()
+
         for i in np.arange(0, detections.shape[2]):
 
             confidence = detections[0, 0, i, 2]
+
+            events.append(list(detections[0, 0, i, :]))
 
             if confidence > self._confidence_threshold:
                 idx = int(detections[0, 0, i, 1])
@@ -56,4 +60,4 @@ class MobileNetWatcher(FrameWatcher):
                 cv2.putText(frame, label, (startX, y),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.COLORS[idx], 2)
 
-        return frame
+        return frame, events

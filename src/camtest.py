@@ -8,12 +8,22 @@ import json
 
 from src.motion_watcher import MotionWatcher
 
-#  cap = cv2.VideoCapture(0) # Capture video from camera
-cap = cv2.VideoCapture('../movies/trimed_fl.mp4')
-
+write_processed_movie = False
+movie_res = (640, 360)
+skip_count = 4
+sleep_time = 0.05
 save_loc = '../captures/'
-
 save_frames = False
+
+if write_processed_movie:
+    print('Opening movie writer...')
+    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    writer = cv2.VideoWriter()
+    success = writer.open('trimmed.mov', fourcc, 10.0, movie_res, True)
+    print('opened = {}'.format(success))
+
+# cap = cv2.VideoCapture(0) # Capture video from camera
+cap = cv2.VideoCapture('../movies/trimed_fl.mp4')
 
 # Get the width and height of frame
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
@@ -24,11 +34,10 @@ print('w={}, h={}'.format(width, height))
 ret, frame = cap.read()
 print('Frame size = {}x{}'.format(frame.shape[1], frame.shape[0]))
 
+# Init 
 framecount = 0
-sleep_time = 0.1
 lastframe_time = datetime.now()
 skip_counter = 0
-skip_count = 4
 
 watcher = MotionWatcher(frame_buffer=None,
                         display_video=True,
@@ -105,6 +114,9 @@ while(cap.isOpened()):
             save_frame(processed_frame, fname_bb)
             detection_events[framecount] = events
 
+        if write_processed_movie:
+            writer.write(processed_frame)
+
         cv2.imshow('frame', processed_frame)
         
         if (cv2.waitKey(1) & 0xFF) == ord('q'): # Hit `q` to exit
@@ -119,6 +131,10 @@ print('Total frames = {}'.format(framecount))
 
 if save_frames:
     save_metadata(detection_events, 'detection_events.json')
+
+if write_processed_movie:
+    writer.release()
+    writer = None
 
 # Release everything if job is finished
 # out.release()
