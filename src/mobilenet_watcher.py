@@ -19,6 +19,7 @@ class MobileNetWatcher(FrameWatcher):
                  name = 'MobileNetWatcher',
                  display_window_name=None,
                  confidence_threshold=0.4,
+                 ignore_classes=list(),
                  **kwargs):
 
         self._model_path = model
@@ -31,11 +32,16 @@ class MobileNetWatcher(FrameWatcher):
             self.display_window_name = name
         self.name = name
 
+        self.ignore_classes = ignore_classes
+
         logger.info('{}'.format(self.display_video))
 
     def _custom_processing(self, timestamp, frame):
         (h,w) = frame.shape[:2]
-        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 0.007843,
+        # args: image, scale_factor, shape, mean_factor
+        # scalefactor = 0.01
+        scalefactor = 0.007843
+        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), scalefactor,
                                      (300, 300), 127.5)
         self._net.setInput(blob)
         detections = self._net.forward()
@@ -46,13 +52,19 @@ class MobileNetWatcher(FrameWatcher):
 
             confidence = detections[0, 0, i, 2]
 
-            events.append(list(detections[0, 0, i, :]))
-
             if confidence > self._confidence_threshold:
+
                 idx = int(detections[0, 0, i, 1])
+                detected_class = self.CLASSES[idx]
+
+                if detected_class in self.ignore_classes:
+                    continue
+
+                events.append(list(detections[0, 0, i, :]))
+
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (startX, startY, endX, endY) = box.astype('int')
-                label = '{}: {:.02f}%'.format(self.CLASSES[idx], confidence*100)
+                label = '{}: {:.02f}%'.format(detected_class, confidence*100)
                 logger.info(label+'\n')
                 cv2.rectangle(frame, (startX, startY), (endX, endY),
                               self.COLORS[idx], 2)

@@ -8,18 +8,24 @@ import json
 
 from src.motion_watcher import MotionWatcher
 
-write_processed_movie = False
-movie_res = (640, 360)
+write_processed_movie = True
+output_fname = 'MobileNetSSD.mov'
+# movie_res = (640, 360)
+# movie_res = (1080, 760)
 skip_count = 4
-sleep_time = 0.05
+sleep_time = 0.25
 save_loc = '../captures/'
 save_frames = False
+use_mobilenet = True
+# scale_factor = 0.5
+scale_factor = 1.0
+
 
 if write_processed_movie:
     print('Opening movie writer...')
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     writer = cv2.VideoWriter()
-    success = writer.open('trimmed.mov', fourcc, 10.0, movie_res, True)
+    success = writer.open(output_fname, fourcc, 10.0, movie_res, True)
     print('opened = {}'.format(success))
 
 # cap = cv2.VideoCapture(0) # Capture video from camera
@@ -39,18 +45,33 @@ framecount = 0
 lastframe_time = datetime.now()
 skip_counter = 0
 
-watcher = MotionWatcher(frame_buffer=None,
-                        display_video=True,
-                        scale_factor=1.0,
-                        threshold=0.04,
-                        full_detection_frame=True,
-                        min_area=1600,
-                        memory=0.1, 
-                        gaussian_blur_size=(11, 11),
-                        dilation_kernel_size=(19, 19))
+if use_mobilenet:
 
-scale_factor = 0.5
-# scale_factor = 1.0
+    from src.mobilenet_watcher import MobileNetWatcher
+
+    watcher = MobileNetWatcher(frame_buffer=None,
+                               display_video=True, 
+                               confidence_threshold=0.25,
+                               ignore_classes=['bottle', ])
+    
+    # def __init__(self,
+    #              model='MobileNetSSD_deploy.caffemodel',
+    #              proto='MobileNetSSD_deploy.prototxt',
+    #              name = 'MobileNetWatcher',
+    #              display_window_name=None,
+    #              confidence_threshold=0.4,
+    #              **kwargs)
+
+else:
+    watcher = MotionWatcher(frame_buffer=None,
+                            display_video=True,
+                            scale_factor=1.0,
+                            threshold=0.04,
+                            full_detection_frame=True,
+                            min_area=1600,
+                            memory=0.1, 
+                            gaussian_blur_size=(11, 11),
+                            dilation_kernel_size=(19, 19))
 
 detection_events = OrderedDict()
 
