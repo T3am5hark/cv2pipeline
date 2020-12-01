@@ -8,18 +8,30 @@ import json
 
 from src.motion_watcher import MotionWatcher
 
-write_processed_movie = True
-output_fname = 'MobileNetSSD.mov'
-# movie_res = (640, 360)
-# movie_res = (1080, 760)
-skip_count = 4
-sleep_time = 0.25
-save_loc = '../captures/'
-save_frames = False
+# MobileNet watcher, else use movement detection
 use_mobilenet = True
+
+write_processed_movie = True
+if use_mobilenet:
+    output_fname = 'Mobilenet-SSD.mov'
+else:
+    output_fname = 'motion.mov'
+# movie_res = (640, 360)
+movie_res = (1280, 720)
+
+# Frame skip from source video due to frame duplication??
+skip_count = 4
+
+# In-loop sleep time
+sleep_time = 0.1
+
+# Decompose movie with annotated detection frames for training
+save_frames = False
+save_loc = '../captures/'
+
+# Rescale video for processing & output
 # scale_factor = 0.5
 scale_factor = 1.0
-
 
 if write_processed_movie:
     print('Opening movie writer...')
@@ -158,6 +170,5 @@ if write_processed_movie:
     writer = None
 
 # Release everything if job is finished
-# out.release()
 cap.release()
 cv2.destroyAllWindows()
