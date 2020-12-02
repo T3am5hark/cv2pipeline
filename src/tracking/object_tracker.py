@@ -5,40 +5,103 @@ from src.tracking.kalman_filter import KalmanFilter
 class ObjectTracker:
 
     def __init__(self):
-        objects = list()
+        self.detected_objects = list()
 
-    def update_detection_events(self, events):
-        foreach obj in objects:
-            pass
+    def update_detection_events(self, frame, events):
+        events['tracked'] = False
+        for obj in self.detected_objects:
+            obj.update_from_events(frame, events)
+
+        for idx, row in events.iterrows():
+            if row['tracked'] == False:
+                print('New detection')
+                print(row)
+                obj = DetectedObject(position=(row['x'], row['y']),
+                                     class_index=int(row['cls']))
+                self.detected_objects.append(obj)
+
+        self.cleanup_objects()
+
+    def cleanup_objects(self):
+        pass
 
 class DetectedObject:
 
     def __init__(self, position, 
+                 class_index,
                  initial_detection_event=None,
-                 prediction_steps=4, 
-                 interpolate_frames=10,
+                 prediction_steps=5,
+                 interpolate_frames=20,
+                 distance_threshold = 0.02,
                  update_on_missing=True):
 
         self.position = position
+        self.position_plus_one = position
         self.last_detected_position = position
         self.initial_position = position
         self.kf = KalmanFilter.init_2dtracker(initial_pos=position)
         self.prediction_steps = prediction_steps
         self.interpolate_frames = interpolate_frames
         self.initial_detection_event = initial_detection_event
-
+        self.distance_threshold = distance_threshold
         self._no_detection_counter = 0
         self.update_on_missing = update_on_missing
+        self.class_index = class_index
 
-    def distance(self, point):
+    def distance(self, point1, point2=None):
+        if point2 is None:
+            point2 = self.position_plus_one
 
-        squared_distance = np.power(point[0]-self.position[0], 2) + np.power(point[1]-self.position[1], 2)
+        squared_distance = np.power(point1[0]-point2[0], 2) + np.power(point1[1]-point2[1], 2)
         return np.sqrt(squared_distance)
 
-    def update_from_events(events):
-        pass
+    def update_from_events(self, frame, events):
+        
+        self._no_detection_counter += 1
+        detected = False
 
-    
+        for idx, row in events.iterrows():
+            x = row['x']; y = row['y']
 
-    
-    
+            dist = self.distance( (x,y) )
+            # print('me:{} det: {} Distance: {:.04f}'.format(self.class_index, row['cls'], dist))
+            if int(row['cls']) == self.class_index and dist < self.distance_threshold:
+                # print('Detected {}: {}, {}'.format(self.class_index, (x,y), self.position))
+                # row['tracked'] = True
+                events.loc[idx, 'tracked'] = True
+                self.position, S_k = self.kf.update(np.array((x, y)))
+                self._no_detection_counter = 0
+                detected = True
+
+                x_update = int(x*frame.shape[1])
+                y_update = int(y*frame.shape[0])
+                cv2.circle(frame, (x_update, y_update), 3, (200, 255, 200), 2)
+
+                break
+
+        if detected:
+            color = (100, 255, 25)
+        else:
+            color = (25, 240, 255)
+            if self._no_detection_counter < self.interpolate_frames:
+                x_k, self.position, P_k, S_k = self.kf.advance_no_observation()
+            else:
+                # We haven't seen a detection event in a long time, don't know where it went!!
+                color = (25, 100, 255)
+
+        x_k = self.kf.x_k
+        P_k = self.kf.P_k
+        for i in np.arange(0, self.prediction_steps):
+            x_k, projected_position, P_k, S_k = self.kf.one_step(x=x_k, P=P_k)
+            if i == 0:
+                self.position_plus_one = projected_position
+            x_prj = int(projected_position[0]*frame.shape[1])
+            y_prj = int(projected_position[1]*frame.shape[0])
+            cv2.circle(frame, (x_prj, y_prj), 2*(i+1), color, 2)
+            self.projected_position = projected_position
+
+        x_pos = int(self.position[0]*frame.shape[1])
+        y_pos = int(self.position[1]*frame.shape[0])
+        cv2.circle(frame, (x_pos, y_pos), 7, color, 1)
+
+

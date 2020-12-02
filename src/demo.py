@@ -8,24 +8,23 @@ import json
 
 from src.motion_watcher import MotionWatcher
 from src.canned_detector import CannedDetector
+from src.tracking.object_tracker import ObjectTracker
 
 # MobileNet watcher, else use movement detection
 use_mobilenet = False
 use_motion_watcher = False
 
-write_processed_movie = False
-if use_mobilenet:
-    output_fname = 'Mobilenet-SSD.mov'
-else:
-    output_fname = 'motion.mov'
+write_processed_movie = True
+output_fname = 'kalman_tracking.mov'
+
 # movie_res = (640, 360)
 movie_res = (1280, 720)
 
 # Frame skip from source video due to frame duplication??
-skip_count = 4
+skip_count = 0
 
 # In-loop sleep time
-sleep_time = 0.1
+sleep_time = 0.07
 
 # Decompose movie with annotated detection frames for training
 save_frames = False
@@ -43,7 +42,7 @@ if write_processed_movie:
     print('opened = {}'.format(success))
 
 # cap = cv2.VideoCapture(0) # Capture video from camera
-cap = cv2.VideoCapture('../movies/trimed_fl.mp4')
+cap = cv2.VideoCapture('forklift_deduped.mov')
 
 # Get the width and height of frame
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
@@ -89,14 +88,14 @@ elif use_motion_watcher:
 
 else:
     detection_events = CannedDetector.load_canned_events('retained_metadata.pkl')
-    class_metadata = {0: {'label': 'forklift', 'color': (35, 150, 200)}, 
+    class_metadata = {0: {'label': 'forklift', 'color': (55, 125, 225)}, 
                       1: {'label': 'person', 'color': (225, 125, 35)}}
     watcher = CannedDetector(detection_events, 
                              class_metadata=class_metadata,
                              frame_buffer=None)
 
 detection_events = OrderedDict()
-
+tracker = ObjectTracker()
 
 def save_frame(frame, fname, path=save_loc):
     filename = path + '/' + fname
@@ -148,6 +147,8 @@ while(cap.isOpened()):
         # write the flipped frame
 
         processed_frame, events = watcher._process_frame(now, frame)
+
+        tracker.update_detection_events(processed_frame, events)
 
         if save_frames and events is not None and len(events) > 0:
             fname = 'frame_{}.jpeg'.format(framecount)

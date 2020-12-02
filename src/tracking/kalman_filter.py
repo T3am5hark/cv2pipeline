@@ -30,8 +30,9 @@ class KalmanFilter:
         x_k = np.matmul(self.A, x)
         y_k = np.matmul(self.H, x_k)
         P_k = np.matmul(np.matmul(self.A, P), self.A.transpose()) + self.Q
+        S_k = np.matmul(np.matmul(self.H, self.P_k), self.H.transpose()) + self.R
         
-        return x_k, y_k, P_k
+        return x_k, y_k, P_k, S_k
 
     def multi_step(self, steps, x=None, P=None):
         if x is None:
@@ -43,7 +44,7 @@ class KalmanFilter:
         y_all = np.zeros((steps, self.H.shape[0]))
         
         for i in range(0, steps):
-            x_k, y_k, P_k = self.one_step(x, P)
+            x_k, y_k, P_k, S_k = self.one_step(x, P)
             
             x_all[i, :] = x_k
             y_all[i, :] = y_k
@@ -63,7 +64,7 @@ class KalmanFilter:
         
         for i in np.arange(0, steps):
 
-            x_k, y_k, P_k = self.one_step(x_k, P_k)
+            x_k, y_k, P_k, S_k = self.one_step(x_k, P_k)
             
             prj_k = {'x_k': x_k,
                      'y_k': y_k,
@@ -78,13 +79,11 @@ class KalmanFilter:
         Perform a 1-step prediction
         """
         
-        x_k, y_k, P_k = self.one_step()
+        x_k, y_k, P_k, S_k = self.one_step()
         
         # One-step prediction error
         err = y - y_k
-        
-        S_k = np.matmul(np.matmul(self.H, self.P_k), self.H.transpose()) + self.R
-        
+                
         # Kalman gain
         K = np.matmul(np.matmul(P_k, self.H.transpose()), np.linalg.inv(S_k))
         
@@ -104,16 +103,16 @@ class KalmanFilter:
         one_step() or multi_step() methods which generate forward predictions without changing the 
         filter's internal state.   
         """
-        x_k, y_k, P_k = self.one_step
+        x_k, y_k, P_k, S_k = self.one_step()
         
         self.x = x_k
         self.P = P_k
         
-        return x_k, y_k, P_k
+        return x_k, y_k, P_k, S_k
 
     @classmethod
-    def init_2dtracker(cls, initial_pos=(0,, 0.), v_decay=0.98, 
-                       accel_decay=0.98, obs_cov=0.0004):
+    def init_2dtracker(cls, initial_pos=(0., 0.), v_decay=0.98, 
+                       accel_decay=0.98, obs_cov=0.0009):
 
         # observables: x&y coordinates
         # internal states: x, y, dx/dt, dy/dt, d2x/dt2, d2y/dt2
@@ -135,7 +134,7 @@ class KalmanFilter:
         H = np.array([[1, 0, 0, 0, 0, 0],
                       [0, 1, 0, 0, 0, 0]])
 
-        Q = np.diag([1e-4, 1e-4, 1e-6, 1e-6, 4e-6, 4e-6])
+        Q = np.diag([1e-6, 1e-6, 5e-7, 5e-7, 1e-5, 1e-5])
         R = np.diag([obs_cov, obs_cov])
 
         kf = KalmanFilter(H=H, x0=x0, A=A, Q=Q, R=R)

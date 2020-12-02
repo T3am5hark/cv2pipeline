@@ -12,6 +12,7 @@ logger = get_default_logger()
 class CannedDetector(FrameWatcher):
 
     DEFAULT_COLOR = (225, 175, 35)
+    ANGLE_MULT = np.cos(np.pi * 0.44)
 
     def __init__(self, detection_events,
                  class_metadata=dict(), 
@@ -38,14 +39,24 @@ class CannedDetector(FrameWatcher):
                 x = int(row['x']*frame.shape[1] - w/2)
                 y = int(row['y']*frame.shape[0] - h/2)
 
-                cv2.rectangle(frame, (x,y), (x+w, y+h), color, 2)
+                cv2.rectangle(frame, (x,y), (x+w, y+h), color, 1)
 
-                text_y = y - 15 if y - 15 > 15 else y + 15
-                cv2.putText(frame, class_label, (x, y),
+                text_y = y - 8 if y - 8 > 8 else y + 9
+                # text_y = y + 18
+                cv2.putText(frame, class_label, (x, text_y),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-                cv2.ellipse(frame, ( int(x+w/2), y+h), (int(w/2), int(h/16)), 
-                            0, 0, 360, (35, 25, 25), 1)
+                steps=40
+                increment=360/steps
+                start_angle = (self.frame_count % steps)*360/steps
+                end_angle = start_angle + increment
+
+                for i in range(steps):
+                    mult = np.cos( 2.0*np.pi*float(i)/steps)
+                    mult = mult*mult
+                    ring_color = (int(color[0]*mult), int(color[1]*mult), int(color[2]*mult))
+                    cv2.ellipse(frame, ( int(x+w/2), y+h), (int(w/2), int(self.ANGLE_MULT*w/2)), 
+                                0, start_angle+i*increment, end_angle+i*increment, ring_color, 2)
 
         self.frame_count += 1
         return frame, events
