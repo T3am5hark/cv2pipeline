@@ -111,3 +111,30 @@ class KalmanFilter:
         self.P = P_k
         
         return x_k, y_k, P_k
+
+    @classmethod
+    def init_2dtracker(cls, x=0., y=0., v_decay=0.98, 
+                       accel_decay=0.98, obs_cov=0.0004):
+
+        # observables: x&y coordinates
+        # internal states: x, y, dx/dt, dy/dt, d2x/dt2, d2y/dt2
+
+        vd = v_decay
+        ad = v_decay
+
+        x0 = np.array([x,  y,  0., 0., 0., 0.])
+        A = np.array([[1., 0., 1., 0., 0., 0.],
+                      [0., 1., 0., 1., 0., 0.],
+                      [0., 0., vd, 0., 1., 0.],
+                      [0., 0., 0., vd, 0., 1.],
+                      [0., 0., 0., 0., ad, 0.],
+                      [0., 0., 0., 0., 0., ad]])
+
+        H = np.array([[1, 0, 0, 0, 0, 0],
+                      [0, 1, 0, 0, 0, 0]])
+
+        Q = np.diag([1e-4, 1e-4, 1e-6, 1e-6, 4e-6, 4e-6])
+        R = np.diag([obs_cov, obs_cov])
+
+        kf = KalmanFilter(H=H, x0=x0, A=A, Q=Q, R=R)
+        return kf
