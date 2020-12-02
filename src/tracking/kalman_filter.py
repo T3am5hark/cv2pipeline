@@ -51,8 +51,7 @@ class KalmanFilter:
             x = x_k
             P = P_k
             
-        return x_all, y_all
-        
+        return x_all, y_all        
 
     def predict(self, steps=1):
         
@@ -113,7 +112,7 @@ class KalmanFilter:
         return x_k, y_k, P_k
 
     @classmethod
-    def init_2dtracker(cls, x=0., y=0., v_decay=0.98, 
+    def init_2dtracker(cls, initial_pos=(0,, 0.), v_decay=0.98, 
                        accel_decay=0.98, obs_cov=0.0004):
 
         # observables: x&y coordinates
@@ -121,6 +120,9 @@ class KalmanFilter:
 
         vd = v_decay
         ad = v_decay
+
+        x = initial_pos[0]
+        y = initial_pos[1]
 
         x0 = np.array([x,  y,  0., 0., 0., 0.])
         A = np.array([[1., 0., 1., 0., 0., 0.],
