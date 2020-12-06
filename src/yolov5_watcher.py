@@ -1,37 +1,55 @@
 import numpy as np
 import cv2
+import pandas as pd
 import imutils
-import pickle
+# import pickle
+import torch
 
 from src.framewatcher import FrameWatcher
 from src.util.log_utils import get_default_logger
+from models.experimental import attempt_load
 
 logger = get_default_logger()
 
 
-class CannedDetector(FrameWatcher):
+class YoloV5Watcher(FrameWatcher):
 
     DEFAULT_COLOR = (225, 175, 35)
     ANGLE_MULT = np.cos(np.pi * 0.44)
 
-    def __init__(self, detection_events,
+    def __init__(self, model_path='../models/best.pt',
                  class_metadata=dict(), 
                  **kwargs):
 
         super().__init__(**kwargs)
-        self.detection_events = detection_events
         self.frame_count = 0
         self.class_metadata = class_metadata
+        logger.info('YoloV5Detector loading {}'.format(model_path))
+        self.model = attempt_load(model_path).fuse().autoshape()
 
     def _custom_processing(self, timestamp, frame):
 
-        events = self.detection_events.get(self.frame_count, None)
+        # events = self.detection_events.get(self.frame_count, None)
+        results = self.model(frame, size=640)
+        events = pd.DataFrame()
+        if len(results.xywh) > 0:
+            tmp = np.array(results.xywh[0])
+            events['cls'] = tmp[:,5].astype(int)
+            events['x'] = tmp[:,0] / frame.shape[1]
+            events['y'] = tmp[:,1] / frame.shape[0]
+            events['w'] = tmp[:,2] / frame.shape[1]
+            events['h'] = tmp[:,3] / frame.shape[0]
+            events['conf'] = tmp[:,4]
 
-        if events is not None:
+        if events is not None and events.shape[0] > 0:
             for idx, row in events.iterrows():
                 class_index = int(row['cls'])
                 class_md = self.class_metadata.get(class_index, dict())
                 class_label = class_md.get('label', str(class_index))
+                confidence = row.get('conf', 0.0)
+ 
+                text = '{}: {:.01f}%'.format(class_label, 100.0*confidence)
+
                 color = class_md.get('color', self.DEFAULT_COLOR)
 
                 w = int(row['w']*frame.shape[1])
@@ -43,7 +61,7 @@ class CannedDetector(FrameWatcher):
 
                 text_y = y - 8 if y - 8 > 8 else y + 9
                 # text_y = y + 18
-                cv2.putText(frame, class_label, (x, text_y),
+                cv2.putText(frame, text, (x, text_y),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
                 steps=40
@@ -60,9 +78,3 @@ class CannedDetector(FrameWatcher):
 
         self.frame_count += 1
         return frame, events
-
-    @classmethod
-    def load_canned_events(cls, fname):
-        with open(fname, 'rb') as f:
-            detection_events = pickle.load(f)
-        return detection_events

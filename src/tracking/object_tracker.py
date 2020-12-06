@@ -4,8 +4,9 @@ from src.tracking.kalman_filter import KalmanFilter
 
 class ObjectTracker:
 
-    def __init__(self):
+    def __init__(self, class_metadata=None):
         self.detected_objects = list()
+        self.class_metadata = class_metadata
 
     def update_detection_events(self, frame, events):
         events['tracked'] = False
@@ -17,7 +18,8 @@ class ObjectTracker:
                 print('New detection')
                 print(row)
                 obj = DetectedObject(position=(row['x'], row['y']),
-                                     class_index=int(row['cls']))
+                                     class_index=int(row['cls']),
+                                     class_metadata=self.class_metadata)
                 self.detected_objects.append(obj)
 
         self.cleanup_objects()
@@ -33,7 +35,9 @@ class DetectedObject:
                  prediction_steps=5,
                  interpolate_frames=20,
                  distance_threshold = 0.02,
-                 update_on_missing=True):
+                 vert_offset = -0.0,
+                 update_on_missing=True,
+                 class_metadata=None):
 
         self.position = position
         self.position_plus_one = position
@@ -47,6 +51,21 @@ class DetectedObject:
         self._no_detection_counter = 0
         self.update_on_missing = update_on_missing
         self.class_index = class_index
+        self.last_detection_event = initial_detection_event
+        self.vert_offset = vert_offset
+        self.class_metadata = class_metadata
+        if class_metadata is not None:
+            if 'vert_offset' in class_metadata.get(class_index, []):
+                self.vert_offset = class_metadata[class_index]['vert_offset']
+
+
+    @property
+    def height(self):
+        return self.last_detection_event['h'] if self.last_detection_event is not None else 10
+
+    @property
+    def width(self):
+        return self.last_detection_event['w'] if self.last_detection_event is not None else 10
 
     def distance(self, point1, point2=None):
         if point2 is None:
@@ -71,10 +90,11 @@ class DetectedObject:
                 events.loc[idx, 'tracked'] = True
                 self.position, S_k = self.kf.update(np.array((x, y)))
                 self._no_detection_counter = 0
+                self.last_detection_event = row
                 detected = True
 
                 x_update = int(x*frame.shape[1])
-                y_update = int(y*frame.shape[0])
+                y_update = int((y+self.vert_offset*self.height)*frame.shape[0])
                 cv2.circle(frame, (x_update, y_update), 3, (200, 255, 200), 2)
 
                 break
@@ -96,12 +116,11 @@ class DetectedObject:
             if i == 0:
                 self.position_plus_one = projected_position
             x_prj = int(projected_position[0]*frame.shape[1])
-            y_prj = int(projected_position[1]*frame.shape[0])
+            y_prj = int( (projected_position[1]+self.vert_offset*self.height)*frame.shape[0])
             cv2.circle(frame, (x_prj, y_prj), 2*(i+1), color, 2)
             self.projected_position = projected_position
 
         x_pos = int(self.position[0]*frame.shape[1])
-        y_pos = int(self.position[1]*frame.shape[0])
+        y_pos = int((self.position[1]+self.vert_offset*self.height)*frame.shape[0])
         cv2.circle(frame, (x_pos, y_pos), 7, color, 1)
-
 

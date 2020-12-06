@@ -13,9 +13,10 @@ from src.tracking.object_tracker import ObjectTracker
 # MobileNet watcher, else use movement detection
 use_mobilenet = False
 use_motion_watcher = False
+use_yolov5_watcher = True
 
 write_processed_movie = True
-output_fname = 'kalman_tracking.mov'
+output_fname = 'yolov5_plus_kalman.mov'
 
 # movie_res = (640, 360)
 movie_res = (1280, 720)
@@ -58,6 +59,14 @@ framecount = 0
 lastframe_time = datetime.now()
 skip_counter = 0
 
+class_metadata = {0: {'label': 'forklift', 
+                      'color': (55, 125, 225), 
+                      'vert_offset': 0.0}, 
+                  1: {'label': 'person', 
+                      'color': (225, 125, 35), 
+                      'vert_offset': -.37},}
+
+
 if use_mobilenet:
 
     from src.mobilenet_watcher import MobileNetWatcher
@@ -85,17 +94,19 @@ elif use_motion_watcher:
                             memory=0.1, 
                             gaussian_blur_size=(11, 11),
                             dilation_kernel_size=(19, 19))
+elif use_yolov5_watcher:
+    from src.yolov5_watcher import YoloV5Watcher
+
+    watcher = YoloV5Watcher(frame_buffer=None, class_metadata=class_metadata)
 
 else:
     detection_events = CannedDetector.load_canned_events('retained_metadata.pkl')
-    class_metadata = {0: {'label': 'forklift', 'color': (55, 125, 225)}, 
-                      1: {'label': 'person', 'color': (225, 125, 35)}}
     watcher = CannedDetector(detection_events, 
                              class_metadata=class_metadata,
                              frame_buffer=None)
 
 detection_events = OrderedDict()
-tracker = ObjectTracker()
+tracker = ObjectTracker(class_metadata=class_metadata)
 
 def save_frame(frame, fname, path=save_loc):
     filename = path + '/' + fname
@@ -174,7 +185,8 @@ while(cap.isOpened()):
 print('Total frames = {}'.format(framecount))
 
 if save_frames:
-    save_metadata(detection_events, 'detection_events.json')
+    pass 
+    # save_metadata(detection_events, 'detection_events.json')
 
 if write_processed_movie:
     writer.release()
