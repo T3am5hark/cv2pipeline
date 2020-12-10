@@ -15,14 +15,16 @@ use_mobilenet = False
 use_motion_watcher = False
 use_yolov5_watcher = True
 
-write_processed_movie = True
-output_fname = 'yolov5_plus_kalman.mov'
+write_processed_movie = False
+output_fname = 'yolov5_plus_kalman_2.mov'
 
 # movie_res = (640, 360)
-movie_res = (1280, 720)
+# movie_res = (1280, 720)
+movie_res = (480, 360)
+movie_fps = 9.0
 
 # Frame skip from source video due to frame duplication??
-skip_count = 0
+skip_count = 5
 
 # In-loop sleep time
 sleep_time = 0.07
@@ -39,11 +41,13 @@ if write_processed_movie:
     print('Opening movie writer...')
     fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
     writer = cv2.VideoWriter()
-    success = writer.open(output_fname, fourcc, 10.0, movie_res, True)
+    success = writer.open(output_fname, fourcc, movie_fps, movie_res, True)
     print('opened = {}'.format(success))
 
 # cap = cv2.VideoCapture(0) # Capture video from camera
-cap = cv2.VideoCapture('forklift_deduped.mov')
+# cap = cv2.VideoCapture('forklift_deduped.mov')
+cap = cv2.VideoCapture('../movies/Forklift Operator Runs Guy Over_360p.mp4')
+
 
 # Get the width and height of frame
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
@@ -64,7 +68,7 @@ class_metadata = {0: {'label': 'forklift',
                       'vert_offset': 0.0}, 
                   1: {'label': 'person', 
                       'color': (225, 125, 35), 
-                      'vert_offset': -.37},}
+                      'vert_offset': -.22},}
 
 
 if use_mobilenet:
@@ -97,7 +101,13 @@ elif use_motion_watcher:
 elif use_yolov5_watcher:
     from src.yolov5_watcher import YoloV5Watcher
 
-    watcher = YoloV5Watcher(frame_buffer=None, class_metadata=class_metadata)
+    model_path = '../models/model_demo2.pt'
+    # model_path = '../models/best.pt'
+
+    watcher = YoloV5Watcher(frame_buffer=None, 
+                            model_path=model_path,
+                            class_metadata=class_metadata,
+                            input_size=320)
 
 else:
     detection_events = CannedDetector.load_canned_events('retained_metadata.pkl')
@@ -106,7 +116,7 @@ else:
                              frame_buffer=None)
 
 detection_events = OrderedDict()
-tracker = ObjectTracker(class_metadata=class_metadata)
+tracker = ObjectTracker(class_metadata=class_metadata, distance_threshold=0.08)
 
 def save_frame(frame, fname, path=save_loc):
     filename = path + '/' + fname

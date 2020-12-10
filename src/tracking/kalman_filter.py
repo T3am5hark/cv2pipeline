@@ -12,7 +12,7 @@ class KalmanFilter:
         self.x_k = x0
         self.H = H
         if P0 is None:
-            P0 = 4*Q
+            P0 = 25*Q
             
         self.P0 = P0
         self.P_k = P0
@@ -105,14 +105,14 @@ class KalmanFilter:
         """
         x_k, y_k, P_k, S_k = self.one_step()
         
-        self.x = x_k
-        self.P = P_k
+        self.x_k = x_k
+        self.P_k = P_k
         
         return x_k, y_k, P_k, S_k
 
     @classmethod
-    def init_2dtracker(cls, initial_pos=(0., 0.), v_decay=0.98, 
-                       accel_decay=0.98, obs_cov=0.0009):
+    def init_2dtracker(cls, initial_pos=(0., 0.), v_decay=0.95, 
+                       accel_decay=0.85, obs_cov=0.0009):
 
         # observables: x&y coordinates
         # internal states: x, y, dx/dt, dy/dt, d2x/dt2, d2y/dt2
@@ -134,7 +134,7 @@ class KalmanFilter:
         H = np.array([[1, 0, 0, 0, 0, 0],
                       [0, 1, 0, 0, 0, 0]])
 
-        Q = np.diag([1e-6, 1e-6, 5e-7, 5e-7, 5e-6, 5e-6])
+        Q = np.diag([4e-6, 4e-6, 4e-7, 4e-7, 1e-6, 1e-6])
         R = np.diag([obs_cov, obs_cov])
 
         kf = KalmanFilter(H=H, x0=x0, A=A, Q=Q, R=R)

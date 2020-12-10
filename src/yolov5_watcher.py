@@ -19,18 +19,20 @@ class YoloV5Watcher(FrameWatcher):
 
     def __init__(self, model_path='../models/best.pt',
                  class_metadata=dict(), 
+                 input_size=640,
                  **kwargs):
 
         super().__init__(**kwargs)
         self.frame_count = 0
         self.class_metadata = class_metadata
+        self.input_size = input_size
         logger.info('YoloV5Detector loading {}'.format(model_path))
         self.model = attempt_load(model_path).fuse().autoshape()
 
     def _custom_processing(self, timestamp, frame):
 
         # events = self.detection_events.get(self.frame_count, None)
-        results = self.model(frame, size=640)
+        results = self.model(frame, size=self.input_size)
         events = pd.DataFrame()
         if len(results.xywh) > 0:
             tmp = np.array(results.xywh[0])

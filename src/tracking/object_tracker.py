@@ -4,9 +4,11 @@ from src.tracking.kalman_filter import KalmanFilter
 
 class ObjectTracker:
 
-    def __init__(self, class_metadata=None):
+    def __init__(self, class_metadata=None,
+                 distance_threshold=0.025):
         self.detected_objects = list()
         self.class_metadata = class_metadata
+        self.distance_threshold = distance_threshold
 
     def update_detection_events(self, frame, events):
         events['tracked'] = False
@@ -19,7 +21,8 @@ class ObjectTracker:
                 print(row)
                 obj = DetectedObject(position=(row['x'], row['y']),
                                      class_index=int(row['cls']),
-                                     class_metadata=self.class_metadata)
+                                     class_metadata=self.class_metadata,
+                                     distance_threshold=self.distance_threshold)
                 self.detected_objects.append(obj)
 
         self.cleanup_objects()
@@ -32,9 +35,9 @@ class DetectedObject:
     def __init__(self, position, 
                  class_index,
                  initial_detection_event=None,
-                 prediction_steps=5,
-                 interpolate_frames=20,
-                 distance_threshold = 0.02,
+                 prediction_steps=8,
+                 interpolate_frames=28,
+                 distance_threshold = 0.025,
                  vert_offset = -0.0,
                  update_on_missing=True,
                  class_metadata=None):
@@ -95,19 +98,19 @@ class DetectedObject:
 
                 x_update = int(x*frame.shape[1])
                 y_update = int((y+self.vert_offset*self.height)*frame.shape[0])
-                cv2.circle(frame, (x_update, y_update), 3, (200, 255, 200), 2)
+                cv2.circle(frame, (x_update, y_update), 4, (180, 200, 180), 2)
 
                 break
 
         if detected:
-            color = (100, 255, 25)
+            color = (180, 225, 75)
         else:
-            color = (25, 240, 255)
+            color = (25, 225, 255)
             if self._no_detection_counter < self.interpolate_frames:
                 x_k, self.position, P_k, S_k = self.kf.advance_no_observation()
             else:
                 # We haven't seen a detection event in a long time, don't know where it went!!
-                color = (25, 100, 255)
+                color = (25, 80, 255)
 
         x_k = self.kf.x_k
         P_k = self.kf.P_k
@@ -117,10 +120,10 @@ class DetectedObject:
                 self.position_plus_one = projected_position
             x_prj = int(projected_position[0]*frame.shape[1])
             y_prj = int( (projected_position[1]+self.vert_offset*self.height)*frame.shape[0])
-            cv2.circle(frame, (x_prj, y_prj), 2*(i+1), color, 2)
+            cv2.circle(frame, (x_prj, y_prj), 1*(i+1), color, 1)
             self.projected_position = projected_position
 
         x_pos = int(self.position[0]*frame.shape[1])
         y_pos = int((self.position[1]+self.vert_offset*self.height)*frame.shape[0])
-        cv2.circle(frame, (x_pos, y_pos), 7, color, 1)
+        cv2.circle(frame, (x_pos, y_pos), 1, color, 3)
 
