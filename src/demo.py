@@ -15,16 +15,16 @@ use_mobilenet = False
 use_motion_watcher = False
 use_yolov5_watcher = True
 
-write_processed_movie = False
-output_fname = 'yolov5_plus_kalman_2.mov'
+write_processed_movie = True
+output_fname = 'yolov5_plus_kalman_1.mov'
 
 # movie_res = (640, 360)
-# movie_res = (1280, 720)
-movie_res = (480, 360)
+movie_res = (1280, 720)
+# movie_res = (480, 360)
 movie_fps = 9.0
 
 # Frame skip from source video due to frame duplication??
-skip_count = 5
+skip_count = 0
 
 # In-loop sleep time
 sleep_time = 0.07
@@ -45,8 +45,8 @@ if write_processed_movie:
     print('opened = {}'.format(success))
 
 # cap = cv2.VideoCapture(0) # Capture video from camera
-# cap = cv2.VideoCapture('forklift_deduped.mov')
-cap = cv2.VideoCapture('../movies/Forklift Operator Runs Guy Over_360p.mp4')
+cap = cv2.VideoCapture('forklift_deduped.mov')
+# cap = cv2.VideoCapture('../movies/Forklift Operator Runs Guy Over_360p.mp4')
 
 
 # Get the width and height of frame
@@ -101,13 +101,13 @@ elif use_motion_watcher:
 elif use_yolov5_watcher:
     from src.yolov5_watcher import YoloV5Watcher
 
-    model_path = '../models/model_demo2.pt'
-    # model_path = '../models/best.pt'
+    # model_path = '../models/model_demo2.pt'
+    model_path = '../models/best.pt'
 
     watcher = YoloV5Watcher(frame_buffer=None, 
                             model_path=model_path,
                             class_metadata=class_metadata,
-                            input_size=320)
+                            input_size=640)
 
 else:
     detection_events = CannedDetector.load_canned_events('retained_metadata.pkl')
@@ -116,7 +116,7 @@ else:
                              frame_buffer=None)
 
 detection_events = OrderedDict()
-tracker = ObjectTracker(class_metadata=class_metadata, distance_threshold=0.08)
+tracker = ObjectTracker(class_metadata=class_metadata, distance_threshold=0.025)
 
 def save_frame(frame, fname, path=save_loc):
     filename = path + '/' + fname
@@ -170,6 +170,7 @@ while(cap.isOpened()):
         processed_frame, events = watcher._process_frame(now, frame)
 
         tracker.update_detection_events(processed_frame, events)
+        tracker.collision_detect(processed_frame)
 
         if save_frames and events is not None and len(events) > 0:
             fname = 'frame_{}.jpeg'.format(framecount)

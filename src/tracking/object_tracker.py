@@ -27,6 +27,20 @@ class ObjectTracker:
 
         self.cleanup_objects()
 
+    def collision_detect(self, frame):
+
+        for idx1, obj1 in enumerate(self.detected_objects):
+
+            for idx2, obj2 in enumerate(self.detected_objects):
+
+                if idx2 <= idx1:
+                    continue
+
+                if obj1.class_index == obj2.class_index:
+                    continue
+
+                obj1.collision_detect(obj2, frame)
+
     def cleanup_objects(self):
         pass
 
@@ -35,11 +49,12 @@ class DetectedObject:
     def __init__(self, position, 
                  class_index,
                  initial_detection_event=None,
-                 prediction_steps=8,
+                 prediction_steps=10,
                  interpolate_frames=28,
                  distance_threshold = 0.025,
                  vert_offset = -0.0,
                  update_on_missing=True,
+                 collision_safety_factor=0.15,
                  class_metadata=None):
 
         self.position = position
@@ -57,6 +72,9 @@ class DetectedObject:
         self.last_detection_event = initial_detection_event
         self.vert_offset = vert_offset
         self.class_metadata = class_metadata
+        self.frame_shape = None
+        self.projected_position = None
+        self.collision_safety_factor = collision_safety_factor
         if class_metadata is not None:
             if 'vert_offset' in class_metadata.get(class_index, []):
                 self.vert_offset = class_metadata[class_index]['vert_offset']
@@ -64,11 +82,11 @@ class DetectedObject:
 
     @property
     def height(self):
-        return self.last_detection_event['h'] if self.last_detection_event is not None else 10
+        return self.last_detection_event['h'] if self.last_detection_event is not None else 0.05
 
     @property
     def width(self):
-        return self.last_detection_event['w'] if self.last_detection_event is not None else 10
+        return self.last_detection_event['w'] if self.last_detection_event is not None else 0.05
 
     def distance(self, point1, point2=None):
         if point2 is None:
@@ -81,6 +99,8 @@ class DetectedObject:
         
         self._no_detection_counter += 1
         detected = False
+        
+        self.frame_shape = frame.shape
 
         for idx, row in events.iterrows():
             x = row['x']; y = row['y']
@@ -127,3 +147,38 @@ class DetectedObject:
         y_pos = int((self.position[1]+self.vert_offset*self.height)*frame.shape[0])
         cv2.circle(frame, (x_pos, y_pos), 1, color, 3)
 
+    def projected_bbox(self, adjust_csf=True):
+
+        csf = 1.0
+        if adjust_csf:
+            csf = 1.0 + self.collision_safety_factor
+
+        center = self.projected_position
+
+        x1 = center[0] - csf*self.width / 2.
+        x2 = center[0] + csf*self.width / 2.
+        y1 = center[1] - csf*self.height / 2.
+        y2 = center[1] + csf*self.height / 2.
+        return (x1, y1, x2, y2)
+
+    def collision_detect(self, other_obj, frame):
+
+        if self.projected_position is None or other_obj.projected_position is None:
+            return False
+
+        x1, y1, x2, y2 = self.projected_bbox()
+        x1b, y1b, x2b, y2b = other_obj.projected_bbox()
+
+        x_overlap = x1 <= x2b and x2 >= x1b
+        y_overlap = y1 <= y2b and y2 >= y1b
+
+        if x_overlap and y_overlap:
+            print('Collision detect!! {}:{}'.format((x1, y1, x2, y2), (x1b, y1b, x2b, y2b)))
+            color = (25, 25, 255)
+            cv2.rectangle(frame, ( int(x1*frame.shape[1]), int(y1*frame.shape[0])), 
+                                 ( int(x2*frame.shape[1]), int(y2*frame.shape[0])), color, 2)
+            cv2.rectangle(frame, ( int(x1b*frame.shape[1]), int(y1b*frame.shape[0])), 
+                                 ( int(x2b*frame.shape[1]), int(y2b*frame.shape[0])), color, 2)
+            return True
+
+        return False

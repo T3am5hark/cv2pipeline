@@ -134,7 +134,7 @@ class KalmanFilter:
         H = np.array([[1, 0, 0, 0, 0, 0],
                       [0, 1, 0, 0, 0, 0]])
 
-        Q = np.diag([4e-6, 4e-6, 4e-7, 4e-7, 1e-6, 1e-6])
+        Q = np.diag([1e-7, 1e-7, 1e-7, 1e-7, 1e-6, 1e-6])
         R = np.diag([obs_cov, obs_cov])
 
         kf = KalmanFilter(H=H, x0=x0, A=A, Q=Q, R=R)
