@@ -9,9 +9,10 @@ import json
 from src.motion_watcher import MotionWatcher
 
 # MobileNet watcher, else use movement detection
-use_mobilenet = True
+use_mobilenet = False
 
-write_processed_movie = True
+write_processed_movie = False
+
 if use_mobilenet:
     output_fname = 'Mobilenet-SSD.mov'
 else:
@@ -20,18 +21,18 @@ else:
 movie_res = (1280, 720)
 
 # Frame skip from source video due to frame duplication??
-skip_count = 4
+skip_count = 0
 
 # In-loop sleep time
-sleep_time = 0.1
+sleep_time = 0.01
 
 # Decompose movie with annotated detection frames for training
 save_frames = False
 save_loc = '../captures/'
 
 # Rescale video for processing & output
-# scale_factor = 0.5
-scale_factor = 1.0
+scale_factor = 0.5
+#scale_factor = 1.0
 
 if write_processed_movie:
     print('Opening movie writer...')
@@ -40,8 +41,8 @@ if write_processed_movie:
     success = writer.open(output_fname, fourcc, 10.0, movie_res, True)
     print('opened = {}'.format(success))
 
-# cap = cv2.VideoCapture(0) # Capture video from camera
-cap = cv2.VideoCapture('../movies/trimed_fl.mp4')
+cap = cv2.VideoCapture(0) # Capture video from camera
+# cap = cv2.VideoCapture('../movies/trimed_fl.mp4')
 
 # Get the width and height of frame
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
