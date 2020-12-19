@@ -2,12 +2,11 @@ from datetime import datetime
 from time import sleep
 from collections import OrderedDict
 
-import numpy as np
 import cv2
 import json
 
-from src.motion_watcher import MotionWatcher
-from src.canned_detector import CannedDetector
+from src.detectors.motion_watcher import MotionWatcher
+from src.detectors.canned_detector import CannedDetector
 from src.tracking.object_tracker import ObjectTracker
 
 # MobileNet watcher, else use movement detection
@@ -69,7 +68,7 @@ class_metadata = {0: {'label': 'forklift',
 
 if use_mobilenet:
 
-    from src.mobilenet_watcher import MobileNetWatcher
+    from src.detectors.mobilenet_watcher import MobileNetWatcher
 
     watcher = MobileNetWatcher(frame_buffer=None,
                                display_video=True, 
@@ -95,7 +94,7 @@ elif use_motion_watcher:
                             gaussian_blur_size=(11, 11),
                             dilation_kernel_size=(19, 19))
 elif use_yolov5_watcher:
-    from src.yolov5_watcher import YoloV5Watcher
+    from src.detectors.yolov5_watcher import YoloV5Watcher
 
     watcher = YoloV5Watcher(frame_buffer=None, class_metadata=class_metadata)
 
@@ -157,7 +156,7 @@ while(cap.isOpened()):
         # frame = cv2.flip(frame,0)
         # write the flipped frame
 
-        processed_frame, events = watcher._process_frame(now, frame)
+        processed_frame, events = watcher.process_frame(now, frame)
 
         tracker.update_detection_events(processed_frame, events)
 

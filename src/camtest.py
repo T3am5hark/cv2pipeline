@@ -2,11 +2,10 @@ from datetime import datetime
 from time import sleep
 from collections import OrderedDict
 
-import numpy as np
 import cv2
 import json
 
-from src.motion_watcher import MotionWatcher
+from src.detectors.motion_watcher import MotionWatcher
 
 # MobileNet watcher, else use movement detection
 use_mobilenet = False
@@ -31,8 +30,8 @@ save_frames = False
 save_loc = '../captures/'
 
 # Rescale video for processing & output
-scale_factor = 0.5
-#scale_factor = 1.0
+#scale_factor = 0.5
+scale_factor = 1.0
 
 if write_processed_movie:
     print('Opening movie writer...')
@@ -60,7 +59,7 @@ skip_counter = 0
 
 if use_mobilenet:
 
-    from src.mobilenet_watcher import MobileNetWatcher
+    from src.detectors.mobilenet_watcher import MobileNetWatcher
 
     watcher = MobileNetWatcher(frame_buffer=None,
                                display_video=True, 
@@ -78,7 +77,7 @@ if use_mobilenet:
 else:
     watcher = MotionWatcher(frame_buffer=None,
                             display_video=True,
-                            scale_factor=1.0,
+                            scale_factor=0.5,
                             threshold=0.04,
                             full_detection_frame=True,
                             min_area=1600,
@@ -138,7 +137,7 @@ while(cap.isOpened()):
         # frame = cv2.flip(frame,0)
         # write the flipped frame
 
-        processed_frame, events = watcher._process_frame(now, frame)
+        processed_frame, events = watcher.process_frame(now, frame)
 
         if save_frames and events is not None and len(events) > 0:
             fname = 'frame_{}.jpeg'.format(framecount)

@@ -74,7 +74,7 @@ class FrameWatcher:
                         continue
 
                     timestamp, frame = frame_tuple
-                    processed_frame, events = self._process_frame(timestamp, frame)
+                    processed_frame, events = self.process_frame(timestamp, frame)
                     self._prev_timestamp = timestamp
                     if self.display_video:
                         self._display_video(processed_frame)
@@ -105,7 +105,7 @@ class FrameWatcher:
             self._fps_counter = 0
         return self._fps
 
-    def _process_frame(self, timestamp, frame):
+    def process_frame(self, timestamp, frame):
 
         frame = np.array(frame)
 

@@ -1,11 +1,9 @@
 import numpy as np
 import cv2
 import pandas as pd
-import imutils
 # import pickle
-import torch
 
-from src.framewatcher import FrameWatcher
+from src.detectors.framewatcher import FrameWatcher
 from src.util.log_utils import get_default_logger
 from models.experimental import attempt_load
 
