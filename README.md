@@ -52,6 +52,8 @@ https://github.com/apple/tensorflow_macos
 
 You can point this to an existing virtualenv (or it will create one for you).
 
+#Rosetta / Compatibility Approach (works after a fashion) #
+
 Once you have an environment with Numpy + Tensorflow, you'll need to install the Brew package manager.  
 This has some issues for M1 as well... see here for instructions on M1 installation:
 
@@ -79,5 +81,23 @@ probably not the best approach but I haven't yet figured out another way to get 
 MacBook Air with the native ARM architecture.  It may require building opencv manually (the way we used
 to have to do it), but that will still require finding an ARM workaround for the cmake dependency.  
 Speedbumps.
+
+# Better approach #
+See this for instructions on setting up Brew for M1:
+
+https://github.com/mikelxc/Workarounds-for-ARM-mac
+
+Make sure to add brew to your path as detailed in the above.
+
+After doing this, I was able to install cmake with compile from source turned on:
+
+./brew install --build-from-source cmake
+
+According to the instructions above, it should also work with
+
+./brew install -s cmake
+
+(cmake built correctly, but pip install opencv-python still failed horribly...
+ so far only the rosetta arch build works...)
 
 
