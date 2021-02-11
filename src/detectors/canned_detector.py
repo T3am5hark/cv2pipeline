@@ -10,12 +10,24 @@ logger = get_default_logger()
 
 class CannedDetector(FrameWatcher):
 
+    """"
+    class CannedDetector(FrameWatcher)
+
+    Implements a frame watcher detection object that uses pre-processed detection metadata
+    as a mock detector.  This was originally built from hand-labeled frames to build the object
+    tracking algorithm and Kalman filter code (prior to YoloV5 detector being in place).
+    """"
+
     DEFAULT_COLOR = (225, 175, 35)
     ANGLE_MULT = np.cos(np.pi * 0.44)
 
     def __init__(self, detection_events,
                  class_metadata=dict(), 
                  **kwargs):
+
+        """
+        To Do: Document structure of class_metadata, refactor into a class
+        """
 
         super().__init__(**kwargs)
         self.detection_events = detection_events
@@ -39,6 +51,9 @@ class CannedDetector(FrameWatcher):
                 y = int(row['y']*frame.shape[0] - h/2)
 
                 # cv2.rectangle(frame, (x,y), (x+w, y+h), color, 1)
+
+                # TODO: Factor out annotation code for portability and polymorphism
+                # Annotation should be portable & swappable
 
                 text_y = y - 8 if y - 8 > 8 else y + 9
                 # text_y = y + 18

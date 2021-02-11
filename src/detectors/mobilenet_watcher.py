@@ -7,6 +7,13 @@ logger = get_default_logger()
 
 class MobileNetWatcher(FrameWatcher):
 
+    """
+    class MobileNetWatcher(FrameWatcher)
+
+    Implements a FrameWatcher processor using a Caffe implementation of a
+    MobileNet detector.  
+    """
+
     CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
                "bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
                "dog", "horse", "motorbike", "person", "pottedplant", "sheep",
@@ -37,9 +44,13 @@ class MobileNetWatcher(FrameWatcher):
         logger.info('{}'.format(self.display_video))
 
     def _custom_processing(self, timestamp, frame):
+        # Implement MobileNet detection.
+        # This implementation works from a fixed 300x300 image size.  
+
         (h,w) = frame.shape[:2]
         # args: image, scale_factor, shape, mean_factor
         # scalefactor = 0.01
+        # ToDo: where did we get this constant from???
         scalefactor = 0.007843
         blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), scalefactor,
                                      (300, 300), 127.5)
@@ -61,6 +72,8 @@ class MobileNetWatcher(FrameWatcher):
                     continue
 
                 events.append(list(detections[0, 0, i, :]))
+
+                # ToDo: Extract annotation code
 
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (startX, startY, endX, endY) = box.astype('int')

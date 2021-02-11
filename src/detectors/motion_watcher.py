@@ -11,6 +11,12 @@ logger = get_default_logger()
 
 class MotionWatcher(FrameWatcher):
 
+    """
+    class MotionWatcher(FrameWatcher)
+
+    Implements motion-based ROI detection using frame differencing.
+    """
+
     def __init__(self, name = 'MotionWatcher',
                  scale_factor = 0.5,
                  threshold = 0.08,
@@ -37,6 +43,8 @@ class MotionWatcher(FrameWatcher):
         self._subtract_motion = subtract_motion
 
     def _custom_processing(self, timestamp, frame):
+
+        # Implement motion-based ROI detection
 
         frame_shape = frame.shape
         #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -82,6 +90,8 @@ class MotionWatcher(FrameWatcher):
                 y = int(y / self._scale_factor)
                 w = int(w / self._scale_factor)
                 h = int(h / self._scale_factor)
+                
+                # ToDo: Extract annotation code
                 #cv2.rectangle(frame, (x,y), (x+w, y+h), (225, 175, 35), 2)
                 fill_rect(frame, (x, y), (x+h, y+h), color=(255, 180, 35), alpha=0.2)
                 rect(frame, (x, y), (x + h, y + h),
@@ -106,6 +116,7 @@ class MotionWatcher(FrameWatcher):
                 self._prev_frame[(x+s):(x+w-s), (y+s):(y+h-s)] = \
                     prev_frame_copy[(x+s):(x+w-s), (y+s):(y+h-s)]
 
+        # ToDo: Make this debug display video output optional
         cv2.imshow('bg_image', delta)
         cv2.waitKey(1)
 

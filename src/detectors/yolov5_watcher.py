@@ -12,6 +12,12 @@ logger = get_default_logger()
 
 class YoloV5Watcher(FrameWatcher):
 
+    """
+    class YoloV5Watcher(FrameWatcher)
+
+    FrameWatcher implementation of a YoloV5 trained detector.
+    """
+
     DEFAULT_COLOR = (225, 175, 35)
     ANGLE_MULT = np.cos(np.pi * 0.44)
 
@@ -19,6 +25,9 @@ class YoloV5Watcher(FrameWatcher):
                  class_metadata=dict(), 
                  input_size=640,
                  **kwargs):
+
+        # TODO: switch input_size to an enum for allowed YoloV5 
+        # detection resolutions?
 
         super().__init__(**kwargs)
         self.frame_count = 0
@@ -28,6 +37,9 @@ class YoloV5Watcher(FrameWatcher):
         self.model = attempt_load(model_path).fuse().autoshape()
 
     def _custom_processing(self, timestamp, frame):
+
+        # TODO: need to document this code better since it's closely bound
+        # to YoloV5 detection API
 
         # events = self.detection_events.get(self.frame_count, None)
         results = self.model(frame, size=self.input_size)
@@ -57,13 +69,18 @@ class YoloV5Watcher(FrameWatcher):
                 x = int(row['x']*frame.shape[1] - w/2)
                 y = int(row['y']*frame.shape[0] - h/2)
 
+                # TODO: extract annotation code for portability & polymorphism
+
+                # Bounding box
                 # cv2.rectangle(frame, (x,y), (x+w, y+h), color, 1)
 
+                # Class label
                 text_y = y - 8 if y - 8 > 8 else y + 9
                 # text_y = y + 18
                 cv2.putText(frame, text, (x, text_y),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
+                # Floor spinner
                 steps=40
                 increment=360/steps
                 start_angle = (self.frame_count % steps)*360/steps

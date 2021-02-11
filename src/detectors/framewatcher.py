@@ -17,7 +17,9 @@ class FrameWatcher:
     class FrameWatcher
 
     Base class for frame processors.  Watcher watches a frame buffer and
-    processes all available video frames.
+    processes all available video frames.  Allows different detection algorithms
+    to be employed with a common interface to subscribe to an asynchronous 
+    frame buffer (multithreaded) or to be tasked with synchronous frame updates.
     """
 
     FPS_FRAMES=20
@@ -26,6 +28,7 @@ class FrameWatcher:
                  name='WatcherProcess',
                  display_video:bool = False,
                  display_window_name = None):
+
         self._buffer = frame_buffer
         self._frame_index = 0
         self._thread = None
@@ -44,6 +47,10 @@ class FrameWatcher:
 
     @property
     def frame_index(self):
+        """ 
+        Sequential integer index of processed frame count.
+        Can differ from buffer frame in async. mode due to skipped frames.
+        """
         return self._frame_index
 
     @property
@@ -51,7 +58,13 @@ class FrameWatcher:
         return self._running
 
     def run(self):
+        """
+        def run(self)
 
+        Starts watcher process on a new thread.  Will watch for new frames to show up in the 
+        buffer and process to catch up to the head (circular buffer processing).  Will continue
+        watching the frame buffer until a stop() command is issued.
+        """
         self._thread = Thread(target=self._watch, args=())
         self._running = True
         self._thread.start()
@@ -91,6 +104,11 @@ class FrameWatcher:
             logger.exception(ex)
 
     def stop(self):
+        """
+        def stop(self)
+
+        Terminate running thread, stop processing new frames in buffer.
+        """
         self._running = False
         self._thread.join()
         logger.info('Stopped {}'.format(self.name))
@@ -134,6 +152,23 @@ class FrameWatcher:
         return processed_frame, events
 
     def _custom_processing(self, timestamp, frame):
+        """
+        def _custom_processing(self, timestamp, frame)
+
+        :param timestamp: datetime, associated with frame
+        :param frame: CV2 image (single video frame) 
+        :return: tuple (processed_frame, events)
+
+        This is the stub for child classes to override with custom processing.
+        The processed_frame can be any permutation desired from the processing algorithm,
+        including ROI / detection annotations, scaling, rotation, frame differencing, etc.
+        This allows a processed video stream to be displayed on screen and/or collected into
+        a processed output movie.  
+
+        events is a list of event metadata.  Structure is implementation-dependent, but for
+        e.g. object detection events, it could be a list of all objected detected in frame, 
+        locations / bounding boxes, class labels, detection confidence metrics, etc. 
+        """
         events = list()
         return frame, events
 

@@ -8,6 +8,15 @@ logger = get_default_logger()
 
 class HaarFaceWatcher(FrameWatcher):
 
+    """
+    class HaarFaceWatcher(FrameWatcher)
+
+    Implements a frame watcher using CV2's pre-trained face detector.  
+
+    Note: the initializer in cv2.CascadeClassifier() is broken out of the box in some cases, so 
+    we give it the full path to the file.  
+    """
+
     def __init__(self, name='HaarFaceWatcher',
                  scale_factor=0.4,
                  display_window_name=None,
@@ -15,6 +24,7 @@ class HaarFaceWatcher(FrameWatcher):
                  detection_scaling_factor=1.25,
                  **kwargs):
 
+        # Load the CascadeClassifier
         #self._cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
         fullpath = '/home/pi/jdm/envs/cv2pipeline/lib/python3.7/site-packages/cv2/data/haarcascade_frontalface_default.xml'
         self._cascade = cv2.CascadeClassifier(fullpath)
@@ -28,6 +38,7 @@ class HaarFaceWatcher(FrameWatcher):
 
     def _custom_processing(self, timestamp, frame):
 
+        # Implements face detection using CV2's pre-trained face detector.  Only works on BW images.
         frame_shape = frame.shape
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray = cv2.resize(gray, (int(frame_shape[1]*self._scale_factor),
