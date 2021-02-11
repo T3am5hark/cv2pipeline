@@ -1,5 +1,17 @@
 import numpy as np
 
+"""
+drawing.py
+
+Tools for frame annotation with alpha blending (looks better, less distracting, 
+and does a better job of visually highlighting e.g. overlap regions, intersections,
+etc.
+
+ToDo:
+
+circles? ellipses? text?
+
+"""
 
 def rect(frame, start_point, end_point,
          color, linewidth=1, alpha=0.5):

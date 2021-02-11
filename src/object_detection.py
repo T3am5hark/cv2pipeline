@@ -1,3 +1,7 @@
+# object_detection.py 
+# From tutorial script using MobileNet SSD detector (naked code, not using FrameWatcher framework)
+
+
 # import the necessary packages
 import numpy as np
 import argparse

@@ -9,20 +9,32 @@ from src.detectors.motion_watcher import MotionWatcher
 from src.detectors.canned_detector import CannedDetector
 from src.tracking.object_tracker import ObjectTracker
 
+"""
+Script for processing movies (movie in, display processed video on screen, 
+optional movie out).  Has a lot of specific code related to production of
+2 forklift videos.  
+
+This runs in SYNCHRONOUS mode (sequential processing of all movie frames).
+The code here also injects the object tracker algorithm for motion tracking
+and prediction.
+"""
+
 # MobileNet watcher, else use movement detection
 use_mobilenet = False
 use_motion_watcher = False
 use_yolov5_watcher = True
 
+# Enable to write output movie from processed video stream
 write_processed_movie = False
 
 use_video_1 = False
 use_video_2 = True
 
 if use_video_1:
+    # Video 1 was pre-processed to de-duplicate frames
     cap = cv2.VideoCapture('forklift_deduped.mov')
     model_path = '../models/best.pt'
-    # Frame skip from source video due to frame duplication??
+    # Don't skip frames - was pre-processed to de-dup
     skip_count = 0
     output_fname = 'yolov5_plus_kalman_1.mov'
     movie_res = (1280, 720)
@@ -31,7 +43,8 @@ if use_video_1:
 elif use_video_2:
     cap = cv2.VideoCapture('../movies/Forklift Operator Runs Guy Over_360p.mp4')
     model_path = '../models/model_demo2.pt'
-    skip_count = 6
+    # Source movie still has irregular duplicate frames
+    skip_count = 5
     output_fname = 'yolov5_plus_kalman_2.mov'
     movie_res = (480, 360)
     dist_threshold = 0.1

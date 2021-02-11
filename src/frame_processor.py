@@ -13,6 +13,15 @@ logger = get_default_logger()
 
 class FrameProcessor:
 
+    """
+    class FrameProcessor
+
+    Designed for asynchronous processing to pull camera frames at the maximum FPS 
+    of the hardware.  Places all frames into FrameBuffer (circular buffer) where 
+    subscribers (FrameWatcher child objects) can process frames with customized 
+    processing logic.
+    """
+
     def __init__(self, vflip=False, hflip=False,
                  frame_buffer: FrameBuffer=None,
                  usb_device=0, sleep_time_s=0.0,
@@ -114,7 +123,9 @@ class FrameProcessor:
 class PicamFrameProcessor(FrameProcessor):
     """
     Placeholder class in the event that we decide to use the RPi
-    camera, has to pull frames differently.
+    camera, has to pull frames differently than USB cameras.  
+
+    ToDo: Implement.
     """
     def _init_video_capture(self):
         pass

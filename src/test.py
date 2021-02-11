@@ -12,6 +12,15 @@ from src.detectors.haar_face_watcher import HaarFaceWatcher
 from src.util.log_utils import get_default_logger, init_logging
 from src.util.general import filename_timestamp
 
+"""
+test.py
+
+Script for processing video from camera input with one or more detectors 
+running in parallel (ASYNCHRONOUS mode).  
+
+"""
+
+
 logger = get_default_logger()
 
 def test(display=False, vflip=False, hflip=False,
@@ -23,10 +32,12 @@ def test(display=False, vflip=False, hflip=False,
                                frame_height=frame_height,
                                frame_width=frame_width)
 
+    # Add frame watchers
     watchers = []
     # watcher = FrameWatcher(frame_buffer=processor.buffer,
     #                       display_video=display)
     if detect:
+        # ToDo: Make these independently selectable
         #watcher = MobileNetWatcher(frame_buffer=processor.buffer,
         #                           display_video=display)
         #watcher = MobileNetTinyWatcher(frame_buffer=processor.buffer,
@@ -45,9 +56,7 @@ def test(display=False, vflip=False, hflip=False,
                                 full_detection_frame=True)
         watchers.append(watcher)
 
-    # watcher = FrameWatcher(frame_buffer=processor.buffer,
-    #                        display_video=display)
-    # watchers.append(watcher)
+    # Start all frame watchers (ASYNCHRONOUS mode)
     for watcher in watchers:
         logger.info('Starting {}'.format(watcher.name))
         watcher.run()
@@ -59,6 +68,8 @@ def test(display=False, vflip=False, hflip=False,
     last_framecount = 0
 
     while True:
+
+        # Update FPS metrics every fps_frames 
         if processor.frame_count - last_framecount >= fps_frames:
             current_time=datetime.now()
             delta_s = (current_time-prevtime).total_seconds()

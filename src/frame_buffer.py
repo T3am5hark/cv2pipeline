@@ -3,6 +3,11 @@ import cv2
 
 
 class FrameBuffer:
+    """
+    class FrameBuffer
+
+    Implements a circular buffer for continuous collection and asynchronous processing of video frames.
+    """
 
     def __init__(self, n_frames=5):
 

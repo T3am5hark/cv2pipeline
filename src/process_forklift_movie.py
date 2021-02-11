@@ -1,3 +1,6 @@
+# Script used to de-dup the first forklift movie and collect frame metadata 
+# for labeling.  
+
 from datetime import datetime
 from time import sleep
 from collections import OrderedDict
@@ -16,7 +19,7 @@ md_path = '../external/forklift_movie-2020_11_30-yolo/obj_train_data'
 # movie_res = (640, 360)
 movie_res = (1280, 720)
 
-# Frame skip from source video due to frame duplication??
+# Frame skip from source video due to frame duplication
 skip_count = 0
 
 # In-loop sleep time
