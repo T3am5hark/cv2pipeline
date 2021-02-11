@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from src.tracking.kalman_filter import KalmanFilter
 
+
 class ObjectTracker:
 
     def __init__(self, class_metadata=None,
@@ -44,6 +45,7 @@ class ObjectTracker:
     def cleanup_objects(self):
         pass
 
+
 class DetectedObject:
 
     def __init__(self, position, 
@@ -55,6 +57,7 @@ class DetectedObject:
                  vert_offset = -0.0,
                  update_on_missing=True,
                  collision_safety_factor=0.15,
+                 confidence_threshold=0.75,
                  class_metadata=None):
 
         self.position = position
@@ -75,6 +78,7 @@ class DetectedObject:
         self.frame_shape = None
         self.projected_position = None
         self.collision_safety_factor = collision_safety_factor
+        self.confidence_threshold = confidence_threshold
         if class_metadata is not None:
             if 'vert_offset' in class_metadata.get(class_index, []):
                 self.vert_offset = class_metadata[class_index]['vert_offset']
@@ -108,6 +112,9 @@ class DetectedObject:
             dist = self.distance( (x,y) )
             # print('me:{} det: {} Distance: {:.04f}'.format(self.class_index, row['cls'], dist))
             if int(row['cls']) == self.class_index and dist < self.distance_threshold:
+                confidence = row.get('conf', 0.0)
+                # if confidence < self.confidence_threshold:
+                #    continue
                 # print('Detected {}: {}, {}'.format(self.class_index, (x,y), self.position))
                 # row['tracked'] = True
                 events.loc[idx, 'tracked'] = True

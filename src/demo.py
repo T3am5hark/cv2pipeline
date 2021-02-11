@@ -15,16 +15,31 @@ use_mobilenet = False
 use_motion_watcher = False
 use_yolov5_watcher = True
 
-write_processed_movie = True
-output_fname = 'yolov5_plus_kalman_1.mov'
+write_processed_movie = False
+
+use_video_1 = False
+use_video_2 = True
+
+if use_video_1:
+    cap = cv2.VideoCapture('forklift_deduped.mov')
+    model_path = '../models/best.pt'
+    # Frame skip from source video due to frame duplication??
+    skip_count = 0
+    output_fname = 'yolov5_plus_kalman_1.mov'
+    movie_res = (1280, 720)
+    dist_threshold = 0.025
+
+elif use_video_2:
+    cap = cv2.VideoCapture('../movies/Forklift Operator Runs Guy Over_360p.mp4')
+    model_path = '../models/model_demo2.pt'
+    skip_count = 6
+    output_fname = 'yolov5_plus_kalman_2.mov'
+    movie_res = (480, 360)
+    dist_threshold = 0.1
+
 
 # movie_res = (640, 360)
-movie_res = (1280, 720)
-# movie_res = (480, 360)
 movie_fps = 9.0
-
-# Frame skip from source video due to frame duplication??
-skip_count = 0
 
 # In-loop sleep time
 sleep_time = 0.07
@@ -45,9 +60,6 @@ if write_processed_movie:
     print('opened = {}'.format(success))
 
 # cap = cv2.VideoCapture(0) # Capture video from camera
-cap = cv2.VideoCapture('forklift_deduped.mov')
-# cap = cv2.VideoCapture('../movies/Forklift Operator Runs Guy Over_360p.mp4')
-
 
 # Get the width and height of frame
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) + 0.5)
@@ -69,7 +81,6 @@ class_metadata = {0: {'label': 'forklift',
                   1: {'label': 'person', 
                       'color': (225, 125, 35), 
                       'vert_offset': -.22},}
-
 
 if use_mobilenet:
 
@@ -101,9 +112,6 @@ elif use_motion_watcher:
 elif use_yolov5_watcher:
     from src.yolov5_watcher import YoloV5Watcher
 
-    # model_path = '../models/model_demo2.pt'
-    model_path = '../models/best.pt'
-
     watcher = YoloV5Watcher(frame_buffer=None, 
                             model_path=model_path,
                             class_metadata=class_metadata,
@@ -116,7 +124,8 @@ else:
                              frame_buffer=None)
 
 detection_events = OrderedDict()
-tracker = ObjectTracker(class_metadata=class_metadata, distance_threshold=0.025)
+tracker = ObjectTracker(class_metadata=class_metadata, 
+                        distance_threshold=dist_threshold)
 
 def save_frame(frame, fname, path=save_loc):
     filename = path + '/' + fname
