@@ -3,15 +3,12 @@ import time
 import argparse
 import readchar
 from datetime import datetime
-from threading import Thread
 
-from src.frame_buffer import FrameBuffer
-from src.framewatcher import FrameWatcher
 from src.frame_processor import FrameProcessor
 # from src.mobilenet_watcher import MobileNetWatcher
 # from src.mobilenet_tiny_watcher import MobileNetTinyWatcher
-from src.motion_watcher import MotionWatcher
-from src.haar_face_watcher import HaarFaceWatcher
+from src.detectors.motion_watcher import MotionWatcher
+from src.detectors.haar_face_watcher import HaarFaceWatcher
 from src.util.log_utils import get_default_logger, init_logging
 from src.util.general import filename_timestamp
 

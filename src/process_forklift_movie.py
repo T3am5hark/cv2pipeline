@@ -2,13 +2,10 @@ from datetime import datetime
 from time import sleep
 from collections import OrderedDict
 
-import numpy as np
 import cv2
 import json
 import pandas as pd
 import pickle
-
-from src.motion_watcher import MotionWatcher
 
 input_movie = '../movies/trimed_fl.mp4'
 write_processed_movie = True

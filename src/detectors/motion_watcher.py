@@ -1,9 +1,10 @@
-import numpy as np
+# import numpy as np
 import cv2
 import imutils
 
-from src.framewatcher import FrameWatcher
+from src.detectors.framewatcher import FrameWatcher
 from src.util.log_utils import get_default_logger
+from src.visualization.drawing import *
 
 logger = get_default_logger()
 
@@ -81,8 +82,10 @@ class MotionWatcher(FrameWatcher):
                 y = int(y / self._scale_factor)
                 w = int(w / self._scale_factor)
                 h = int(h / self._scale_factor)
-                cv2.rectangle(frame, (x,y), (x+w, y+h), (225, 175, 35), 2)
-
+                #cv2.rectangle(frame, (x,y), (x+w, y+h), (225, 175, 35), 2)
+                fill_rect(frame, (x, y), (x+h, y+h), color=(255, 180, 35), alpha=0.2)
+                rect(frame, (x, y), (x + h, y + h),
+                     linewidth=1, color=(255, 180, 35), alpha=0.66)
                 event = (x, y, w, h)
                 events.append(event)
 
