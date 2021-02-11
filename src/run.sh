@@ -9,5 +9,6 @@
 # Test on Mac with default res
 # python test.py --hflip=True --display_video=True --detect_motion=True
 
-# On M1 with default res
+# On MacBook Air M1 with default res
+# Having to use compatability mode at present - hopefully this will go native soon.
 arch -x86_64 python test.py --hflip=True --display_video=True --detect_motion=True
