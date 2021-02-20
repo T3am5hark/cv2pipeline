@@ -56,6 +56,44 @@ You may need to install the following:
 ```bash
 sudo apt-get install libatlas-base-dev
 ```
+
+___________
+Jetson Nano
+___________
+
+In general, you don't want to use standard PIP install of the deep learning libraries
+on Jetson because you won't be able to take advantage of the GPU hardware.  Good 
+instructions on how to install platform-specific versions of libraries are included below.
+
+For this reason, the requirements.txt file for jetson excludes tensorflow and opencv dependencies.
+
+Assorted libraries:
+
+https://www.pyimagesearch.com/2019/05/06/getting-started-with-the-nvidia-jetson-nano/
+
+OpenCV, numpy, scipy:
+
+It's best to use the system-installed opencv.  Within the virtual environment, you can
+symlink from within [env]/lib/python3.6/site-packages:
+
+```bash
+ln -s /usr/lib/python3.6/dist-packages/cv2 cv2
+```
+
+```bash
+ln -s /usr/lib/python3/dist-packages/numpy numpy
+```
+
+```bash
+ln -s /usr/lib/python3/dist-packages/scipy scipy
+```
+
+
+Installing a specific OpenCV version for Jetson (not tested):
+
+https://qengineering.eu/install-opencv-4.5-on-jetson-nano.html
+
+
 ___________________
 MacBook Air M1 Chip
 ___________________

@@ -90,10 +90,10 @@ class MotionWatcher(FrameWatcher):
                 y = int(y / self._scale_factor)
                 w = int(w / self._scale_factor)
                 h = int(h / self._scale_factor)
-                
+
                 # ToDo: Extract annotation code
                 #cv2.rectangle(frame, (x,y), (x+w, y+h), (225, 175, 35), 2)
-                fill_rect(frame, (x, y), (x+h, y+h), color=(255, 180, 35), alpha=0.2)
+                fill_rect(frame, (x, y), (x+h, y+h), color=(255, 200, 85), alpha=0.15)
                 rect(frame, (x, y), (x + h, y + h),
                      linewidth=1, color=(255, 180, 35), alpha=0.66)
                 event = (x, y, w, h)
