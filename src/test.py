@@ -15,8 +15,8 @@ from src.util.general import filename_timestamp
 """
 test.py
 
-Script for processing video from camera input with one or more detectors 
-running in parallel (ASYNCHRONOUS mode).  
+Script for processing video from camera input with one or more detectors
+running in parallel (ASYNCHRONOUS capture mode)
 
 """
 
@@ -69,7 +69,7 @@ def test(display=False, vflip=False, hflip=False,
 
     while True:
 
-        # Update FPS metrics every fps_frames 
+        # Update FPS metrics every fps_frames
         if processor.frame_count - last_framecount >= fps_frames:
             current_time=datetime.now()
             delta_s = (current_time-prevtime).total_seconds()
@@ -125,11 +125,9 @@ if __name__ == '__main__':
     frame_height = vars(args)['frame_height']
     frame_width = vars(args)['frame_width']
 
-    logger.info('display_video={}'.format(display_video))
-    logger.info('vflip={}'.format(vflip))
-    logger.info('hflip={}'.format(hflip))
-    logger.info('frame_height={}'.format(frame_height))
-    logger.info('frame_width={}'.format(frame_width))
+    logger.info('Arguments:')
+    for k,v in vars(args).items():
+        logger.info('{:20s} {}'.format(k, v))
 
     test(display=display_video, vflip=vflip, hflip=hflip,
          detect=detect, detect_motion=detect_motion,
