@@ -11,7 +11,7 @@ class MobileNetWatcher(FrameWatcher):
     class MobileNetWatcher(FrameWatcher)
 
     Implements a FrameWatcher processor using a Caffe implementation of a
-    MobileNet detector.  
+    MobileNet detector.
     """
 
     CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
@@ -28,6 +28,7 @@ class MobileNetWatcher(FrameWatcher):
                  display_window_name=None,
                  confidence_threshold=0.4,
                  ignore_classes=list(),
+                 log_detections=False,
                  **kwargs):
 
         self._model_path = path + '/' + model
@@ -41,12 +42,13 @@ class MobileNetWatcher(FrameWatcher):
         self.name = name
 
         self.ignore_classes = ignore_classes
+        self._log_detections = log_detections
 
         logger.info('{}'.format(self.display_video))
 
     def _custom_processing(self, timestamp, frame):
         # Implement MobileNet detection.
-        # This implementation works from a fixed 300x300 image size.  
+        # This implementation works from a fixed 300x300 image size.
 
         (h,w) = frame.shape[:2]
         # args: image, scale_factor, shape, mean_factor
@@ -79,7 +81,8 @@ class MobileNetWatcher(FrameWatcher):
                 box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
                 (startX, startY, endX, endY) = box.astype('int')
                 label = '{}: {:.02f}%'.format(detected_class, confidence*100)
-                logger.info(label+'\n')
+                if self._log_detections:
+                    logger.debug(label+'\n')
                 cv2.rectangle(frame, (startX, startY), (endX, endY),
                               self.COLORS[idx], 2)
                 y = startY - 15 if startY - 15 > 15 else startY + 15

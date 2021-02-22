@@ -84,6 +84,12 @@ ln -s /usr/lib/python3.6/dist-packages/cv2 cv2
 ln -s /usr/lib/python3/dist-packages/numpy numpy
 ```
 
+(for newer numpy):
+
+```bash
+ln -s /usr/local/lib/python3.6/dist-packages/numpy numpy
+```
+
 ```bash
 ln -s /usr/lib/python3/dist-packages/scipy scipy
 ```

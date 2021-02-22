@@ -5,7 +5,7 @@ import readchar
 from datetime import datetime
 
 from src.frame_processor import FrameProcessor
-# from src.mobilenet_watcher import MobileNetWatcher
+from src.detectors.mobilenet_watcher import MobileNetWatcher
 # from src.mobilenet_tiny_watcher import MobileNetTinyWatcher
 from src.detectors.motion_watcher import MotionWatcher
 from src.detectors.haar_face_watcher import HaarFaceWatcher
@@ -38,15 +38,15 @@ def test(display=False, vflip=False, hflip=False,
     #                       display_video=display)
     if detect:
         # ToDo: Make these independently selectable
-        #watcher = MobileNetWatcher(frame_buffer=processor.buffer,
-        #                           display_video=display)
+        watcher = MobileNetWatcher(frame_buffer=processor.buffer,
+                                   display_video=display)
         #watcher = MobileNetTinyWatcher(frame_buffer=processor.buffer,
         #                               display_video=display)
-        watcher = HaarFaceWatcher(frame_buffer=processor.buffer,
-                                  display_video=display,
-                                  scale_factor=0.5,
-                                  detection_scaling_factor=1.2,
-                                  full_detection_frame=True)
+        #watcher = HaarFaceWatcher(frame_buffer=processor.buffer,
+        #                          display_video=display,
+        #                          scale_factor=0.5,
+        #                          detection_scaling_factor=1.2,
+        #                          full_detection_frame=True)
         watchers.append(watcher)
 
     if detect_motion:
