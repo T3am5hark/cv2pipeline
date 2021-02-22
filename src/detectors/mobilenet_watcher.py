@@ -21,6 +21,7 @@ class MobileNetWatcher(FrameWatcher):
     COLORS = np.random.uniform(0, 255, size=(len(CLASSES), 3))
 
     def __init__(self,
+                 path='../models',
                  model='MobileNetSSD_deploy.caffemodel',
                  proto='MobileNetSSD_deploy.prototxt',
                  name = 'MobileNetWatcher',
@@ -29,8 +30,8 @@ class MobileNetWatcher(FrameWatcher):
                  ignore_classes=list(),
                  **kwargs):
 
-        self._model_path = model
-        self._proto_path = proto
+        self._model_path = path + '/' + model
+        self._proto_path = path + '/' + proto
         self._confidence_threshold = confidence_threshold
         logger.info('{} reading model file'.format(name))
         self._net = cv2.dnn.readNetFromCaffe(self._proto_path, self._model_path)
