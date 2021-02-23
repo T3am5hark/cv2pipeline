@@ -27,6 +27,7 @@ class MotionWatcher(FrameWatcher):
                  gaussian_blur_size=(11, 11),
                  dilation_kernel_size=(5, 5),
                  subtract_motion=False,
+                 label_text=False,
                  **kwargs):
 
         super().__init__(name=name, display_window_name=display_window_name, **kwargs)
@@ -41,17 +42,15 @@ class MotionWatcher(FrameWatcher):
         self._gaussian_blur_size = gaussian_blur_size
         self._dilation_kernel_size = dilation_kernel_size
         self._subtract_motion = subtract_motion
+        self._label_text = label_text
 
     def _custom_processing(self, timestamp, frame):
-
         # Implement motion-based ROI detection
-
-        frame_shape = frame.shape
         #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        #gray = cv2.resize(gray, (int(frame_shape[1]*self._scale_factor),
-        #                         int(frame_shape[0]*self._scale_factor)))
-        gray = cv2.resize(frame, (int(frame_shape[1]*self._scale_factor),
-                                 int(frame_shape[0]*self._scale_factor)))
+        #gray = cv2.resize(gray, (int(frame.shape[1]*self._scale_factor),
+        #                         int(frame.shape[0]*self._scale_factor)))
+        gray = cv2.resize(frame, (int(frame.shape[1]*self._scale_factor),
+                                 int(frame.shape[0]*self._scale_factor)))
 
         gray = cv2.GaussianBlur(gray, self._gaussian_blur_size, 0)
         display_gray = gray
@@ -72,13 +71,6 @@ class MotionWatcher(FrameWatcher):
         contours = imutils.grab_contours(contours)
 
         if self._full_detection_frame:
-            #frame = cv2.resize(frame, (int(frame_shape[1]*self._scale_factor),
-            #                   int(frame_shape[0]*self._scale_factor)))
-            # new_mask = cv2.resize(mask, (frame_shape[1], frame_shape[0]))
-            #for i in range(0,3):
-            #for i in [0, 1, 2]:
-            #    frame[:,:,i] = np.minimum(frame[:,:,i]+0.25*(mask/255)*frame[:,:,i], 255)
-
 
             events = list()
             for cnt in contours:
@@ -91,11 +83,9 @@ class MotionWatcher(FrameWatcher):
                 w = int(w / self._scale_factor)
                 h = int(h / self._scale_factor)
 
-                # ToDo: Extract annotation code
-                #cv2.rectangle(frame, (x,y), (x+w, y+h), (225, 175, 35), 2)
-                fill_rect(frame, (x, y), (x+h, y+h), color=(255, 200, 85), alpha=0.15)
-                rect(frame, (x, y), (x + h, y + h),
-                     linewidth=1, color=(255, 180, 35), alpha=0.66)
+                label = 'motion ({0:04},{0:04})'.format( int(x+w/2), int(y+h/2)) if self._label_text else ''
+                self.annotate(frame, (x,y,x+w+1,y+h+1), label=label)
+
                 event = (x, y, w, h)
                 events.append(event)
 

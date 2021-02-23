@@ -33,10 +33,20 @@ def rect(frame, start_point, end_point,
     x1, y1, x2, y2 = (start_point[0], start_point[1],
                       end_point[0], end_point[1])
 
-    x1 = np.minimum(x1, frame.shape[1]-linewidth)
-    x2 = np.minimum(x2, frame.shape[1]-linewidth)
-    y1 = np.minimum(y1, frame.shape[0]-linewidth)
-    y2 = np.minimum(y2, frame.shape[0]-linewidth)
+    x1 = np.maximum(0, np.minimum(x1, frame.shape[1]-1))
+    x2 = np.maximum(0, np.minimum(x2, frame.shape[1]-1))
+    y1 = np.maximum(0, np.minimum(y1, frame.shape[0]-1))
+    y2 = np.maximum(0, np.minimum(y2, frame.shape[0]-1))
+    
+    if x2 < x1:
+        tmp = x1
+        x1 = x2
+        x2 = tmp
+    
+    if y2 < y1:
+        tmp = y1
+        y1 = y2
+        y2 = tmp
 
     w = x2 - x1 + 1
     h = y2 - y1 + 1
@@ -62,7 +72,7 @@ def rect(frame, start_point, end_point,
 def fill_rect(frame, start_point, end_point,
               color, alpha=0.5):
     """
-    rect(frame, start_point, end_point, color, linewidth=1, alpha=0.5)
+    fill_rect(frame, start_point, end_point, color, linewidth=1, alpha=0.5)
 
     :param frame: An image with shape (H,W,3)
     :param start_point: tuple (or array-like) of (x1, y1)
@@ -76,17 +86,25 @@ def fill_rect(frame, start_point, end_point,
     x1, y1, x2, y2 = (start_point[0], start_point[1],
                       end_point[0], end_point[1])
 
-    x1 = np.minimum(x1, frame.shape[1]-1)
-    x2 = np.minimum(x2, frame.shape[1]-1)
-    y1 = np.minimum(y1, frame.shape[0]-1)
-    y2 = np.minimum(y2, frame.shape[0]-1)
+    x1 = np.maximum(0, np.minimum(x1, frame.shape[1]-1))
+    x2 = np.maximum(0, np.minimum(x2, frame.shape[1]-1))
+    y1 = np.maximum(0, np.minimum(y1, frame.shape[0]-1))
+    y2 = np.maximum(0, np.minimum(y2, frame.shape[0]-1))
+    
+    if x2 < x1:
+        tmp = x1
+        x1 = x2
+        x2 = tmp
+    
+    if y2 < y1:
+        tmp = y1
+        y1 = y2
+        y2 = tmp
 
-    w = x2-x1+1
-    h = y2-y1+1
+    w = x2 - x1 + 1
+    h = y2 - y1 + 1
     rectarr = np.ones(shape=(h, w, 1))
     arr = np.kron(rectarr, cvec)
-
-    # print('Array shape = {}'.format(arr.shape))
 
     y2 += 1
     x2 += 1
@@ -94,3 +112,4 @@ def fill_rect(frame, start_point, end_point,
     frame[y1:y2, x1:x2, :] = alpha*arr + (1.-alpha)*frame[y1:y2, x1:x2, :]
 
     return frame
+

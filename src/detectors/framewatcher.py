@@ -3,10 +3,11 @@ import cv2
 import numpy as np
 
 from datetime import datetime
-
 from threading import Thread
+
 from src.frame_buffer import FrameBuffer
 from src.util.log_utils import get_default_logger
+from src.visualization.annotator import *
 
 logger = get_default_logger()
 
@@ -27,7 +28,8 @@ class FrameWatcher:
     def __init__(self, frame_buffer: FrameBuffer,
                  name='WatcherProcess',
                  display_video:bool = False,
-                 display_window_name = None):
+                 display_window_name = None,
+                 annotators=None):
 
         self._buffer = frame_buffer
         self._frame_index = 0
@@ -44,6 +46,11 @@ class FrameWatcher:
         self._fps_time = datetime.now()
         self._fps = 0.0
         self._text_size = 0.5
+
+        if annotators is None:
+            annotators = FrameWatcher._get_default_annotators()
+
+        self._annotators = annotators
 
     @property
     def frame_index(self):
@@ -147,9 +154,28 @@ class FrameWatcher:
         processed_frame = cv2.putText(processed_frame, text, origin,
                                       cv2.FONT_HERSHEY_SIMPLEX,
                                       self._text_size, text_color, 1)
-        processed_frame, events = self._custom_processing(timestamp, processed_frame)
+        try:
+            processed_frame, events = self._custom_processing(timestamp, processed_frame)
+        except Exception as ex:
+            logger.exception(str(ex))
+            events = list()
 
         return processed_frame, events
+
+    def annotate(self, frame, bbox, label):
+        for annotator in self._annotators:
+            annotator.annotate(frame, bbox, label=label)
+
+    @classmethod
+    def _get_default_annotators(cls):
+        annotators = list()
+        bbox = BoxAnnotator()
+        text_annotator = TextAnnotator(text_color=bbox.outline_color)
+
+        annotators.append(bbox)
+        annotators.append(text_annotator)
+
+        return annotators
 
     def _custom_processing(self, timestamp, frame):
         """

@@ -44,6 +44,11 @@ class MobileNetWatcher(FrameWatcher):
         self.ignore_classes = ignore_classes
         self._log_detections = log_detections
 
+        self._class_annotators = list()
+        for c in self.CLASSES:
+            self._class_annotators.append(FrameWatcher._get_default_annotators())
+        
+
         logger.info('{}'.format(self.display_video))
 
     def _custom_processing(self, timestamp, frame):
@@ -78,15 +83,16 @@ class MobileNetWatcher(FrameWatcher):
 
                 # ToDo: Extract annotation code
 
-                box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                box = detections[0, 0, i, 3:7] * np.array([w-1, h-1, w-1, h-1])
                 (startX, startY, endX, endY) = box.astype('int')
-                label = '{}: {:.02f}%'.format(detected_class, confidence*100)
+                
+                #bbox = (startX, startY, endX-startX+1, endY-startY+1)
+                
+                label = '{}: {:.01f}%'.format(detected_class, confidence*100)
                 if self._log_detections:
                     logger.debug(label+'\n')
-                cv2.rectangle(frame, (startX, startY), (endX, endY),
-                              self.COLORS[idx], 2)
-                y = startY - 15 if startY - 15 > 15 else startY + 15
-                cv2.putText(frame, label, (startX, y),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.COLORS[idx], 2)
+
+                for annotator in self._class_annotators[idx]:
+                    annotator.annotate(frame, box.astype('int'), label)
 
         return frame, events
